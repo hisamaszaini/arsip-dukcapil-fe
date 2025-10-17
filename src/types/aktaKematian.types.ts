@@ -6,9 +6,6 @@ export const createSchema = z.object({
     nama: z.string().nonempty('Nama wajib diisi').trim(),
     fileSuratKematian: createFileSchema("File Surat Kematian", true),
     fileKk: createFileSchema("File KK", true),
-    fileSuratNikah: createFileSchema("File Surat Nikah", true),
-    fileSPTJMKematian: createFileSchema("File SPTJM Kematian", true),
-    fileSPTJMPernikahan: createFileSchema("File SPTJM Pernikahan", true),
     fileLampiran: createFileSchema("File Lampiran", false),
 });
 
@@ -22,9 +19,6 @@ export const updateSchema = z.object({
 
   fileSuratKematian: createFileSchema("File Surat Kematian", false),
   fileKk: createFileSchema("File KK", false),
-  fileSuratNikah: createFileSchema("File Surat Nikah", false),
-  fileSPTJMKematian: createFileSchema("File SPTJM Kematian", false),
-  fileSPTJMPernikahan: createFileSchema("File SPTJM Pernikahan", false),
   fileLampiran: createFileSchema("File Lampiran", false),
 });
 
@@ -47,9 +41,6 @@ export const aktaKematianSchema = z.object({
     nama: z.string(),
     fileSuratKematian: z.string(),
     fileKk: z.string(),
-    fileSuratNikah: z.string(),
-    fileSPTJMKematian: z.string(),
-    fileSPTJMPernikahan: z.string(),
     fileLampiran: z.string(),
     createdAt: z.string(),
     updatedAt: z.string()

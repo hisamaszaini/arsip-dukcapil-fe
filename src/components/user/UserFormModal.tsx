@@ -69,7 +69,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     const onSubmit = async (data: CreateDto | UpdateDto) => {
         try {
             await onSave(data, isEditing ? editingUser?.id ?? null : null);
-            toast.success(isEditing ? "Pengguna berhasil diperbarui!" : "Pengguna berhasil ditambahkan!");
+            // toast.success(isEditing ? "Pengguna berhasil diperbarui!" : "Pengguna berhasil ditambahkan!");
             onClose();
         } catch (err: any) {
             const apiError = err?.response?.data;

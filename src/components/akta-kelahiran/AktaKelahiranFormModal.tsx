@@ -103,7 +103,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
             });
 
             await onSave(data, isEditing ? editingData?.id ?? null : null);
-            toast.success(isEditing ? "Data berhasil diperbarui!" : "Data berhasil ditambahkan!");
+            // toast.success(isEditing ? "Data berhasil diperbarui!" : "Data berhasil ditambahkan!");
             onClose();
         } catch (err: any) {
             const apiError = err?.response?.data;
