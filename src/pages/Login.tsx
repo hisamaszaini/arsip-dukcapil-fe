@@ -23,9 +23,9 @@ const LoginPage: React.FC = () => {
   const onSubmit = async (data: LoginDto) => {
     setError("");
     try {
-      await login(data);
-    //   const role = loggedInUser?.role?.toLowerCase() ?? "admin";
-      navigate(`/admin/dashboard`);
+      const loggedInUser = await login(data);
+      const role = loggedInUser?.role?.toLowerCase() ?? "admin";
+      navigate(`/${role}/dashboard`);
     } catch (err: any) {
       setError(err.response?.data?.message || "Login Gagal");
     }

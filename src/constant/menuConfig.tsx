@@ -27,15 +27,14 @@ export const menuConfig: Record<UserRole, NavigationItem[]> = {
     { label: 'Logout', icon: LogOut, isLogout: true },
   ],
     OPERATOR: [
-    { label: 'Dashboard', path: '/admin/dashboard', icon: Home },
-    { label: 'Data User', path: '/admin/user', icon: User2 },
+    { label: 'Dashboard', path: '/operator/dashboard', icon: Home },
     {
       label: 'Layanan Arsip',
       icon: FileText,
       children: [
-        { label: 'Akta Kelahiran', path: '/admin/layanan-arsip/akta-kelahiran', icon: Inbox },
-        { label: 'Akta Kematian', path: '/admin/layanan-arsip/akta-kematian', icon: File },
-        { label: 'Surat Kehilangan', path: '/admin/layanan-arsip/surat-kehilangan', icon: File },
+        { label: 'Akta Kelahiran', path: '/operator/layanan-arsip/akta-kelahiran', icon: Inbox },
+        { label: 'Akta Kematian', path: '/operator/layanan-arsip/akta-kematian', icon: File },
+        { label: 'Surat Kehilangan', path: '/operator/layanan-arsip/surat-kehilangan', icon: File },
       ],
     },
     { label: 'Pengaturan Akun', path: '/profile', icon: User },
