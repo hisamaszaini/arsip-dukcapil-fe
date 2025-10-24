@@ -7,29 +7,26 @@ import {
     updateSchema,
     type CreateDto,
     type UpdateDto,
-    type AktaKematian,
-} from "../../types/aktaKematian.types";
+    type SuratPerubahanKependudukan,
+} from "../../types/suratPerubahanKependudukan.types";
 import TextInput from "../ui/TextInput";
 import { Button } from "../ui/Button";
 import { ImageUpload } from "../ui/ImageUpload";
 
-interface AktaKematianFormModalProps {
+interface SuratPerubahanKependudukanFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (formData: CreateDto | UpdateDto, id: number | null) => Promise<void>;
-    editingData: AktaKematian | null;
+    editingData: SuratPerubahanKependudukan | null;
 }
 
 const fileFields = [
-    "fileSuratKematian",
+    "filePerubahan",
     "fileKk",
     "fileLampiran",
-    "fileRegister",
-    "fileLaporan",
-    "fileSPTJM",
 ];
 
-const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
+const SuratPerubahanKependudukanFormModal: React.FC<SuratPerubahanKependudukanFormModalProps> = ({
     isOpen,
     onClose,
     onSave,
@@ -61,7 +58,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
                 reset({ nik: editingData.nik, nama: editingData.nama });
                 const initialFiles: Record<string, File | null> = {};
                 fileFields.forEach((f) => {
-                    initialFiles[f] = null; // file baru selalu null
+                    initialFiles[f] = null; // file baru null
                     setValue(f as keyof CreateDto, null); // reset RHF
                 });
                 setFiles(initialFiles);
@@ -78,7 +75,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
     }, [isOpen, isEditing, editingData, reset, setValue]);
 
     const onSubmit = async (data: CreateDto | UpdateDto) => {
-        for (const f of fileFields.slice(0, 2)) { // hanya cek file wajib
+        for (const f of fileFields.slice(0, 2)) {
             const hasFile = files[f] || (editingData && (editingData as any)[f]);
             if (!hasFile) {
                 setError(f as keyof CreateDto, { type: "custom", message: `${f} wajib diunggah` });
@@ -102,7 +99,6 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
             });
 
             await onSave(data, isEditing ? editingData?.id ?? null : null);
-            // toast.success(isEditing ? "Data berhasil diperbarui!" : "Data berhasil ditambahkan!");
             onClose();
         } catch (err: any) {
             const apiError = err?.response?.data;
@@ -126,6 +122,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
         }
     };
 
+
     console.log(errors);
 
     if (!isOpen) return null;
@@ -142,7 +139,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
                 {/* Header */}
                 <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                        {isEditing ? "Edit Data Akta Kematian" : "Tambah Akta Kematian"}
+                        {isEditing ? "Edit Data Surat Perubahan Kependudukan" : "Tambah Surat Perubahan Kependudukan"}
                     </h3>
                     <p className="text-sm text-gray-600 mt-4 font-bold"><span className="text-red-500">*</span> Wajib diisi</p>
                 </div>
@@ -172,12 +169,9 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         {fileFields.map((key) => {
                             const labelMap: Record<string, string> = {
-                                fileSuratKematian: "Surat Kematian",
-                                fileKk: "Kartu Keluarga (KK)",
-                                fileLampiran: "Lampiran (Opsional)",
-                                fileRegister: "Register (Opsional)",
-                                fileLaporan: "Laporan (Opsional)",
-                                fileSPTJM: "SPTJM Kebenaran Identitas Jenazah (Opsional)",
+                                filePerubahan: "Surat Perubahan Kependudukan",
+                                fileKk: "Kartu Keluarga",
+                                fileLampiran: "Lampiran (Opsional)"
                             };
                             const label = labelMap[key] || key;
 
@@ -219,4 +213,4 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
     );
 };
 
-export default AktaKematianFormModal;
+export default SuratPerubahanKependudukanFormModal;

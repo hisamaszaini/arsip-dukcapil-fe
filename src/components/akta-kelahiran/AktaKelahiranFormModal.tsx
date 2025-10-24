@@ -78,7 +78,6 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
     }, [isOpen, isEditing, editingData, reset, setValue]);
 
     const onSubmit = async (data: CreateDto | UpdateDto) => {
-        // Pastikan semua file wajib sudah ada
         for (const f of fileFields.slice(0, 5)) {
             const hasFile = files[f] || (editingData && (editingData as any)[f]);
             if (!hasFile) {
@@ -127,9 +126,6 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
         }
     };
 
-
-    console.log(errors);
-
     if (!isOpen) return null;
 
     return (
@@ -141,7 +137,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
                 className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header tetap */}
+                {/* Header */}
                 <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">
                         {isEditing ? "Edit Data Akta Kelahiran" : "Tambah Akta Kelahiran"}
@@ -166,6 +162,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
                         placeholder="Masukkan Nama Lengkap..."
                         required={true}
                         error={errors.nama?.message}
+                        className="uppercase"
                         {...register("nama")}
                     />
 

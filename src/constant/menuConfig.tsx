@@ -21,12 +21,14 @@ export const menuConfig: Record<UserRole, NavigationItem[]> = {
         { label: 'Akta Kelahiran', path: '/admin/layanan-arsip/akta-kelahiran', icon: Inbox },
         { label: 'Akta Kematian', path: '/admin/layanan-arsip/akta-kematian', icon: File },
         { label: 'Surat Kehilangan', path: '/admin/layanan-arsip/surat-kehilangan', icon: File },
+        { label: 'Surat Permohonan Pindah', path: '/admin/layanan-arsip/surat-permohonan-pindah', icon: File },
+        { label: 'Surat Perubahan Kependudukan', path: '/admin/layanan-arsip/surat-perubahan-kependudukan', icon: File },
       ],
     },
     { label: 'Pengaturan Akun', path: '/profile', icon: User },
     { label: 'Logout', icon: LogOut, isLogout: true },
   ],
-    OPERATOR: [
+  OPERATOR: [
     { label: 'Dashboard', path: '/operator/dashboard', icon: Home },
     {
       label: 'Layanan Arsip',
@@ -35,6 +37,8 @@ export const menuConfig: Record<UserRole, NavigationItem[]> = {
         { label: 'Akta Kelahiran', path: '/operator/layanan-arsip/akta-kelahiran', icon: Inbox },
         { label: 'Akta Kematian', path: '/operator/layanan-arsip/akta-kematian', icon: File },
         { label: 'Surat Kehilangan', path: '/operator/layanan-arsip/surat-kehilangan', icon: File },
+        { label: 'Surat Permohonan Pindah', path: '/operator/layanan-arsip/surat-permohonan-pindah', icon: File },
+        { label: 'Surat Perubahan Kependudukan', path: '/operator/layanan-arsip/surat-perubahan-kependudukan', icon: File },
       ],
     },
     { label: 'Pengaturan Akun', path: '/profile', icon: User },

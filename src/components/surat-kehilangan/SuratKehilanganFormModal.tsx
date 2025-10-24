@@ -136,7 +136,7 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                 className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header tetap */}
+                {/* Header */}
                 <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">
                         {isEditing ? "Edit Data Surat Kehilangan" : "Tambah Surat Kehilangan"}
@@ -161,6 +161,7 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                         placeholder="Masukkan Nama Lengkap..."
                         required={true}
                         error={errors.nama?.message}
+                        className="uppercase"
                         {...register("nama")}
                     />
 

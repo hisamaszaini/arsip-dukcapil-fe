@@ -11,6 +11,8 @@ import AktaKelahiranPage from './pages/AktaKelahiran';
 import SuratKehilanganPage from './pages/SuratKehilangan';
 import AktaKematianPage from './pages/AktaKematian';
 import OperatorDashboardPage from './pages/operator/DashboardOperator';
+import SuratPermohonanPindahPage from './pages/SuratPermohonanPindah';
+import SuratPerubahanKependudukanPage from './pages/SuratPerubahanKependudukan';
 
 function App() {
 
@@ -32,19 +34,23 @@ function App() {
           >
             <Route path="/profile" element={<ProfilePage />} />
 
-            <Route element={ <ProtectedRoute allowedRoles={['ADMIN']}> <Outlet /> </ProtectedRoute> } >
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN']}> <Outlet /> </ProtectedRoute>} >
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/user" element={<UserPage />} />
               <Route path="/admin/layanan-arsip/akta-kelahiran" element={<AktaKelahiranPage />} />
               <Route path="/admin/layanan-arsip/akta-kematian" element={<AktaKematianPage />} />
               <Route path="/admin/layanan-arsip/surat-kehilangan" element={<SuratKehilanganPage />} />
+              <Route path="/admin/layanan-arsip/surat-permohonan-pindah" element={<SuratPermohonanPindahPage />} />
+              <Route path="/admin/layanan-arsip/surat-perubahan-kependudukan" element={<SuratPerubahanKependudukanPage />} />
             </Route>
 
-            <Route element={ <ProtectedRoute allowedRoles={['OPERATOR']}> <Outlet /> </ProtectedRoute> } >
+            <Route element={<ProtectedRoute allowedRoles={['OPERATOR']}> <Outlet /> </ProtectedRoute>} >
               <Route path="/operator/dashboard" element={<OperatorDashboardPage />} />
               <Route path="/operator/layanan-arsip/akta-kelahiran" element={<AktaKelahiranPage />} />
               <Route path="/operator/layanan-arsip/akta-kematian" element={<AktaKematianPage />} />
               <Route path="/operator/layanan-arsip/surat-kehilangan" element={<SuratKehilanganPage />} />
+              <Route path="/operator/layanan-arsip/surat-permohonan-pindah" element={<SuratPermohonanPindahPage />} />
+              <Route path="/operator/layanan-arsip/surat-perubahan-kependudukan" element={<SuratPerubahanKependudukanPage />} />
             </Route>
           </Route>
         </Routes>

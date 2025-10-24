@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../../lib/utils';
 
 interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id: string;
@@ -40,8 +41,15 @@ const TextInput: React.FC<TextInputProps> = ({
         required={required} // set attribute HTML
         aria-invalid={!!error}
         aria-describedby={ariaDescribedBy}
-        className={`w-full px-4 py-3 border rounded-md text-gray-900 focus:outline-none focus:ring-2 transition-colors duration-200 ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200 focus:ring-0'
-            : error ? 'border-red-500 ring-red-500 focus:border-red-500' : 'bg-white border-blue-300 focus:ring-emerald-500 focus:border-emerald-500'} ${className || ''}`}
+        className={cn(
+          "w-full px-4 py-3 border rounded-md text-gray-900 focus:outline-none focus:ring-2 transition-colors duration-200",
+          disabled
+            ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200 focus:ring-0"
+            : error
+              ? "border-red-500 ring-red-500 focus:border-red-500"
+              : "bg-white border-blue-300 focus:ring-emerald-500 focus:border-emerald-500",
+          className
+        )}
         {...rest}
       />
 
