@@ -10,9 +10,9 @@ export const useSuratPermohonanPindahData = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [queryParams, setQueryParams] = useState<Partial<FindAllSuratPermohonanPindahDto>>({
         page: 1,
-        limit: 10,
-        sortBy: 'createdAt',
-        sortOrder: 'asc',
+        limit: 20,
+        sortBy: 'id',
+        sortOrder: 'desc',
         search: '',
     });
 

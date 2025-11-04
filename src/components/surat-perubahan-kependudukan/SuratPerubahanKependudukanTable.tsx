@@ -22,6 +22,8 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
     onDelete,
 }) => {
     const [expandedAccordions, setExpandedAccordions] = useState<Record<number, boolean>>({});
+        const startIndex = ((queryParams.page || 1) - 1) * (queryParams.limit || 10);
+
     const renderState = (message: string, colSpan: number) => {
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
             return <div className="text-center p-8 text-gray-500">{message}</div>;
@@ -103,7 +105,7 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
                                                 ${hasOtherFiles ? 'cursor-pointer hover:bg-gray-50' : ''}
                                             `}
                                             >
-                                                <td className="px-2 py-4 text-medium text-gray-500 text-center">{index + 1}</td>
+                                                <td className="px-2 py-4 text-medium text-gray-500 text-center">{ startIndex + index + 1}</td>
                                                 <td className="px-4 py-4 font-medium text-gray-900">{surat.nik}</td>
                                                 <td className="px-6 py-4 text-medium text-gray-600">{surat.nama}</td>
                                                 <td className="px-4 py-4 text-center">
@@ -197,7 +199,7 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div className="flex items-center space-x-3 min-w-0">
                                                         <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">
-                                                            {index + 1}
+                                                            {startIndex + index + 1}
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="text-sm font-semibold text-gray-800 truncate">{surat.nama}</p>

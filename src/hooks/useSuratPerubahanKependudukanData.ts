@@ -10,9 +10,9 @@ export const useSuratPerubahanKependudukanData = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [queryParams, setQueryParams] = useState<Partial<FindAllSuratPerubahanKependudukanDto>>({
         page: 1,
-        limit: 10,
-        sortBy: 'createdAt',
-        sortOrder: 'asc',
+        limit: 20,
+        sortBy: 'id',
+        sortOrder: 'desc',
         search: '',
     });
 

@@ -19,6 +19,8 @@ const roleBadge: Record<string, string> = {
 };
 
 const UserTable: React.FC<UserTableProps> = ({ userList, isLoading, onSort, queryParams, onEdit, onDelete }) => {
+    const startIndex = ((queryParams.page || 1) - 1) * (queryParams.limit || 10);
+
     const renderState = (message: string, colSpan: number) => {
         // For mobile view
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -56,7 +58,7 @@ const UserTable: React.FC<UserTableProps> = ({ userList, isLoading, onSort, quer
                                 ? renderState('Tidak ada data pengguna.', 6)
                                 : userList.map((user, index) => (
                                     <tr key={user.id}>
-                                        <td className="px-2 py-5 whitespace-nowrap text-sm text-gray-500 text-center">{index + 1}</td>
+                                        <td className="px-2 py-5 whitespace-nowrap text-sm text-gray-500 text-center">{startIndex + index + 1}</td>
                                         <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-left">{user.name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user?.username}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -100,7 +102,7 @@ const UserTable: React.FC<UserTableProps> = ({ userList, isLoading, onSort, quer
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">
-                                                        {index + 1}
+                                                        {startIndex + index + 1}
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-semibold text-gray-800">{user.name}</p>

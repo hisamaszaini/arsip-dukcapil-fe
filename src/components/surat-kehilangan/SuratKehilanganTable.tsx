@@ -22,6 +22,7 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
     onDelete,
 }) => {
     const [expandedAccordions, setExpandedAccordions] = useState<Record<number, boolean>>({});
+    const startIndex = ((queryParams.page || 1) - 1) * (queryParams.limit || 10);
 
     const renderState = (message: string, colSpan: number) => {
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -89,14 +90,14 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                             const url = surat[key as keyof SuratKehilangan];
                                             if (typeof url === 'string' && url) {
                                                 return {
-                                                    label: labelMap[key] || key.replace('file', 'File '), 
+                                                    label: labelMap[key] || key.replace('file', 'File '),
                                                     url: url,
                                                 };
                                             }
                                             return null;
                                         })
                                         .filter((entry): entry is { label: string; url: string } => entry !== null);
-                                    
+
                                     const hasOtherFiles = otherFileEntries.length > 0;
                                     const isExpanded = !!expandedAccordions[surat.id];
 
@@ -110,7 +111,7 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                                 ${hasOtherFiles ? 'cursor-pointer hover:bg-gray-50' : ''}
                                             `}
                                             >
-                                                <td className="px-2 py-4 text-medium text-gray-500 text-center">{index + 1}</td>
+                                                <td className="px-2 py-4 text-medium text-gray-500 text-center">{startIndex + index + 1}</td>
                                                 <td className="px-4 py-4 font-medium text-gray-900">{surat.nik}</td>
                                                 <td className="px-6 py-4 text-medium text-gray-600">{surat.nama}</td>
                                                 <td className="px-4 py-4 text-center">
@@ -202,7 +203,7 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div className="flex items-center space-x-3 min-w-0">
                                                         <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">
-                                                            {index + 1}
+                                                            {startIndex + index + 1}
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="text-sm font-semibold text-gray-800 truncate">{surat.nama}</p>
