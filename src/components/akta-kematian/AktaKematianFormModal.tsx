@@ -47,7 +47,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
         formState: { errors, isSubmitting },
     } = useForm<CreateDto | UpdateDto>({
         resolver: zodResolver(schema),
-        defaultValues: { nik: "", nama: "" },
+        defaultValues: { nik: "", noAkta: "", nama: "" },
     });
 
     const [files, setFiles] = useState<Record<string, File | null>>(
@@ -58,7 +58,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             if (isEditing && editingData) {
-                reset({ nik: editingData.nik, nama: editingData.nama });
+                reset({ nik: editingData.nik, noAkta: editingData.noAkta, nama: editingData.nama });
                 const initialFiles: Record<string, File | null> = {};
                 fileFields.forEach((f) => {
                     initialFiles[f] = null; // file baru selalu null
@@ -156,6 +156,15 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
                         required={true}
                         error={errors.nik?.message}
                         {...register("nik")}
+                    />
+
+                    <TextInput
+                        id="noAkta"
+                        label="No. Akta"
+                        placeholder="Masukkan No. Akta Kematian..."
+                        required={false}
+                        error={errors.noAkta?.message}
+                        {...register("noAkta")}
                     />
 
                     <TextInput

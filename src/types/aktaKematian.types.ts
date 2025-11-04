@@ -3,6 +3,7 @@ import { createFileSchema } from "./file.types";
 
 export const createSchema = z.object({
   nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
+  noAkta: z.string().trim().optional(),
   nama: z.string().nonempty('Nama wajib diisi').trim(),
   fileSuratKematian: createFileSchema("File Surat Kematian", true),
   fileKk: createFileSchema("File KK", true),
@@ -18,8 +19,8 @@ export const updateSchema = z.object({
     .nonempty("NIK wajib diisi")
     .trim()
     .regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
+  noAkta: z.string().trim().optional(),
   nama: z.string().nonempty("Nama wajib diisi").trim(),
-
   fileSuratKematian: createFileSchema("File Surat Kematian", false),
   fileKk: createFileSchema("File KK", false),
   fileLampiran: createFileSchema("File Lampiran", false),
@@ -44,6 +45,7 @@ export const findAllAktaSchema = z.object({
 export const aktaKematianSchema = z.object({
   id: z.number(),
   nik: z.string(),
+  noAkta: z.string().optional(),
   nama: z.string(),
   fileSuratKematian: z.string(),
   fileKk: z.string(),
