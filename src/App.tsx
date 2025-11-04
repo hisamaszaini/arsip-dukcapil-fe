@@ -13,6 +13,7 @@ import AktaKematianPage from './pages/AktaKematian';
 import OperatorDashboardPage from './pages/operator/DashboardOperator';
 import SuratPermohonanPindahPage from './pages/SuratPermohonanPindah';
 import SuratPerubahanKependudukanPage from './pages/SuratPerubahanKependudukan';
+import HomePage from './pages/Home';
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public */}
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
 
           {/* Protected with layout */}
