@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { X, Image as ImageIcon } from 'lucide-react';
+import { X, Image as ImageIcon, ExternalLink } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '../../lib/utils';
 
@@ -74,7 +74,7 @@ export function ImageUpload({
             onChange(null);
             return;
         }
-        const maxSizeInMB = 2;
+        const maxSizeInMB = 1;
         if (selectedFile.size > maxSizeInMB * 1024 * 1024) {
             setError(`Image size cannot exceed ${maxSizeInMB}MB.`);
             onChange(null);
@@ -96,6 +96,8 @@ export function ImageUpload({
                         alt="Image Preview"
                         className="w-full h-full object-contain rounded-lg"
                     />
+
+                    {/* Tombol hapus */}
                     {!readOnly && previewUrl && (
                         <Button
                             variant="primary"
@@ -110,6 +112,22 @@ export function ImageUpload({
                             <X className="h-4 w-4" />
                         </Button>
                     )}
+
+                    {/* Tombol buka */}
+                    {imageSource && (
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            className="absolute bottom-2 right-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 shadow-sm text-sm px-2 py-1 flex items-center space-x-1"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(imageSource, '_blank');
+                            }}
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                            <span>Buka</span>
+                        </Button>
+                    )}
                 </div>
             );
         }
@@ -122,7 +140,7 @@ export function ImageUpload({
                 <span className="text-sm font-semibold text-gray-600">
                     Klik atau seret gambar disini
                 </span>
-                <span className="text-xs text-gray-500">JPG (Max 2MB)</span>
+                <span className="text-xs text-gray-500">JPG (Max 1MB)</span>
                 {filePath && !file && (
                     <a
                         href={`${API_URL}/uploads/${filePath}`}
