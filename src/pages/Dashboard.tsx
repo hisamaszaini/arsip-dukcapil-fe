@@ -76,11 +76,10 @@ const AdminDashboardPage: React.FC = () => {
                                         <div className="flex items-center space-x-4">
                                             <div className="flex-shrink-0">
                                                 <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold ${getActivityItemStyle(activity.jenisLayanan)}`}>
-                                                    {activity.nama[0]?.toUpperCase()}
                                                 </div>
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm font-medium text-gray-900">{activity.nama}</p>
+                                                <p className="truncate text-sm font-medium text-gray-900">{activity.jenisLayanan ?? ""}</p>
                                                 <p className="truncate text-sm text-gray-500">{activity.jenisLayanan}</p>
                                             </div>
                                             <div className="inline-flex items-center text-right text-sm text-gray-500">

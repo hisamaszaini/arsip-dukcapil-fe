@@ -11,7 +11,7 @@ import {
 } from "../../types/aktaKematian.types";
 import TextInput from "../ui/TextInput";
 import { Button } from "../ui/Button";
-import { ImageUpload } from "../ui/ImageUpload";
+import MultiImageUpload from "../ui/MultiImageUpload";
 
 interface AktaKematianFormModalProps {
     isOpen: boolean;
@@ -47,7 +47,11 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
         formState: { errors, isSubmitting },
     } = useForm<CreateDto | UpdateDto>({
         resolver: zodResolver(schema),
-        defaultValues: { nik: "", noAkta: "", nama: "" },
+        defaultValues: {
+            nik: "",
+            noAkta: "",
+            // nama: ""
+        },
     });
 
     const [files, setFiles] = useState<Record<string, File | null>>(
@@ -58,7 +62,11 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             if (isEditing && editingData) {
-                reset({ nik: editingData.nik, noAkta: editingData.noAkta, nama: editingData.nama });
+                reset({
+                    nik: editingData.nik,
+                    noAkta: editingData.noAkta,
+                    // nama: editingData.nama
+                });
                 const initialFiles: Record<string, File | null> = {};
                 fileFields.forEach((f) => {
                     initialFiles[f] = null; // file baru selalu null
@@ -167,7 +175,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
                         {...register("noAkta")}
                     />
 
-                    <TextInput
+                    {/* <TextInput
                         id="nama"
                         label="Nama Lengkap"
                         placeholder="Masukkan Nama Lengkap..."
@@ -175,43 +183,38 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
                         error={errors.nama?.message}
                         className="uppercase"
                         {...register("nama")}
-                    />
+                    /> */}
 
-                    {/* Upload Files */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        {fileFields.map((key) => {
-                            const labelMap: Record<string, string> = {
-                                fileSuratKematian: "Surat Kematian",
-                                fileKk: "Kartu Keluarga (KK)",
-                                fileLampiran: "Lampiran (Opsional)",
-                                fileRegister: "Register (Opsional)",
-                                fileLaporan: "Laporan (Opsional)",
-                                fileSPTJM: "SPTJM Kebenaran Identitas Jenazah (Opsional)",
-                            };
-                            const label = labelMap[key] || key;
-
-                            return (
-                                <div key={key}>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                                    <ImageUpload
-                                        file={files[key]}
-                                        filePath={
-                                            (editingData as any)?.[key]
-                                                ? (editingData as any)[key]
-                                                : undefined
-                                        }
-                                        onChange={(file) => {
-                                            setFiles((prev) => ({ ...prev, [key]: file }));
-                                            setValue(key as keyof CreateDto, file);
-                                        }}
-                                    />
-                                    {errors[key as keyof CreateDto] && (
-                                        <p className="text-red-600 text-sm mt-1">{errors[key as keyof CreateDto]?.message}</p>
-                                    )}
-                                </div>
+                    <MultiImageUpload
+                        mode={isEditing ? "edit" : "create"}
+                        label="Unggah Berkas Pendukung"
+                        fileFields={[
+                            { key: "fileSuratKematian", label: "Surat Kematian" },
+                            { key: "fileKk", label: "Kartu Keluarga (KK)" },
+                            { key: "fileRegister", label: "Register (Opsional)" },
+                            { key: "fileLaporan", label: "Laporan (Opsional)" },
+                            { key: "fileSPTJM", label: "SPTJM Kebenaran Identitas Jenazah (Opsional)" },
+                            { key: "fileLampiran", label: "Lampiran (Opsional)" },
+                        ]}
+                        initialFiles={
+                            isEditing && editingData
+                                ? {
+                                    fileSuratKematian: editingData.fileSuratKematian || null,
+                                    fileKk: editingData.fileKk || null,
+                                    fileRegister: editingData.fileRegister || null,
+                                    fileLaporan: editingData.fileLaporan || null,
+                                    fileSPTJM: editingData.fileSPTJM || null,
+                                    fileLampiran: editingData.fileLampiran || null,
+                                }
+                                : undefined
+                        }
+                        onChange={(mapped) => {
+                            setFiles(mapped);
+                            Object.entries(mapped).forEach(([key, file]) =>
+                                setValue(key as keyof CreateDto, file)
                             );
-                        })}
-                    </div>
+                        }}
+                    />
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                         <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>

@@ -6,24 +6,24 @@ const noAktaSchema = z
   .nonempty("No. Akta wajib diisi")
   .trim()
   .regex(
-    /^3520-LU-\d{8}-\d{4}$/,
-    "Format No. Akta tidak valid (Contoh: 3520-LU-31072002-0001)"
+    /^3520-[A-Z]{2}-\d{8}-\d{4}$/,
+    "Format No. Akta tidak valid (Contoh: 3520-XX-31072002-0001)"
   );
 
 export const createSchema = z.object({
   noAkta: noAktaSchema,
-  nama: z.string().nonempty('Nama wajib diisi').trim(),
+  // nama: z.string().nonempty('Nama wajib diisi').trim(),
   fileSuratKelahiran: createFileSchema("File Surat Kelahiran", true),
-  fileKk: createFileSchema("File KK", true),
-  fileSuratNikah: createFileSchema("File Surat Nikah", true),
-  fileSPTJMKelahiran: createFileSchema("File SPTJM Kelahiran", true),
-  fileSPTJMPernikahan: createFileSchema("File SPTJM Pernikahan", true),
+  fileKk: createFileSchema("File KK", false),
+  fileSuratNikah: createFileSchema("File Surat Nikah", false),
+  fileSPTJMKelahiran: createFileSchema("File SPTJM Kelahiran", false),
+  fileSPTJMPernikahan: createFileSchema("File SPTJM Pernikahan", false),
   fileLampiran: createFileSchema("File Lampiran", false),
 });
 
 export const updateSchema = z.object({
   noAkta: noAktaSchema,
-  nama: z.string().nonempty("Nama wajib diisi").trim(),
+  // nama: z.string().nonempty("Nama wajib diisi").trim(),
   fileSuratKelahiran: createFileSchema("File Surat Kelahiran", false),
   fileKk: createFileSchema("File KK", false),
   fileSuratNikah: createFileSchema("File Surat Nikah", false),
@@ -39,7 +39,7 @@ export const findAllAktaSchema = z.object({
   sortBy: z.enum([
     'id',
     'nik',
-    'nama',
+    // 'nama',
     'createdAt',
   ]).optional().default('id'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
@@ -48,7 +48,7 @@ export const findAllAktaSchema = z.object({
 export const aktaKelahiranSchema = z.object({
   id: z.number(),
   noAkta: z.string(),
-  nama: z.string(),
+  // nama: z.string(),
   fileSuratKelahiran: z.string(),
   fileKk: z.string(),
   fileSuratNikah: z.string(),

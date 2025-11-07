@@ -16,7 +16,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 export function ImageUpload({
     file,
     filePath,
-    onChange = () => {},
+    onChange = () => { },
     readOnly = false,
     accept = 'image/jpeg, image/jpg',
 }: ImageUploadProps) {
@@ -90,11 +90,11 @@ export function ImageUpload({
     const renderContent = () => {
         if (imageSource) {
             return (
-                <div className="relative w-full h-full">
+                <div className="relative w-full max-h-[300px] flex items-center justify-center overflow-hidden rounded-lg bg-gray-50">
                     <img
                         src={imageSource}
                         alt="Image Preview"
-                        className="w-full h-full object-contain rounded-lg"
+                        className="w-full max-h-[300px] object-contain rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
                     />
 
                     {/* Tombol hapus */}
@@ -135,10 +135,10 @@ export function ImageUpload({
         if (readOnly) return <p className="text-sm text-gray-500">Tidak ada gambar.</p>;
 
         return (
-            <div className="flex flex-col items-center space-y-2 text-gray-500">
-                <ImageIcon className="h-8 w-8" />
+            <div className="flex flex-col items-center space-y-2 text-gray-500 py-8">
+                <ImageIcon className="h-10 w-10" />
                 <span className="text-sm font-semibold text-gray-600">
-                    Klik atau seret gambar disini
+                    Klik atau seret gambar di sini
                 </span>
                 <span className="text-xs text-gray-500">JPG (Max 1MB)</span>
                 {filePath && !file && (
@@ -158,7 +158,7 @@ export function ImageUpload({
     return (
         <div
             className={cn(
-                'relative group border-2 border-dashed rounded-xl p-4 text-center transition-colors duration-200 aspect-square w-full flex items-center justify-center',
+                'relative group border-2 border-dashed rounded-xl p-3 text-center transition-colors duration-200 w-full flex items-center justify-center',
                 !readOnly && 'cursor-pointer',
                 isDragging && 'border-indigo-500 bg-indigo-50',
                 !isDragging && 'border-gray-300 hover:bg-gray-50',
@@ -166,21 +166,22 @@ export function ImageUpload({
                 readOnly && 'bg-gray-100 border-gray-200 cursor-default',
                 imageSource && 'p-0 border-solid'
             )}
+
             onClick={!readOnly ? handleSelect : undefined}
             onDragOver={
                 !readOnly
                     ? (e) => {
-                          e.preventDefault();
-                          setIsDragging(true);
-                      }
+                        e.preventDefault();
+                        setIsDragging(true);
+                    }
                     : undefined
             }
             onDragLeave={
                 !readOnly
                     ? (e) => {
-                          e.preventDefault();
-                          setIsDragging(false);
-                      }
+                        e.preventDefault();
+                        setIsDragging(false);
+                    }
                     : undefined
             }
             onDrop={!readOnly ? handleDrop : undefined}

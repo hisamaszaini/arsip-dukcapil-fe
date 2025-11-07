@@ -2,24 +2,32 @@ import z from "zod";
 import { createFileSchema } from "./file.types";
 
 export const createSchema = z.object({
-  nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
-  noAkta: z.string().trim().optional(),
-  nama: z.string().nonempty('Nama wajib diisi').trim(),
+  // nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
+  // noAkta: z.string().trim().optional(),
+  nik: z.string().trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka').optional().or(z.literal('')),
+  noAkta: z.string().trim().optional().or(z.literal('')),
+  // nama: z.string().nonempty('Nama wajib diisi').trim(),
   fileSuratKematian: createFileSchema("File Surat Kematian", true),
-  fileKk: createFileSchema("File KK", true),
+  fileKk: createFileSchema("File KK", false),
   fileLampiran: createFileSchema("File Lampiran", false),
   fileRegister: createFileSchema("File Register", false),
   fileLaporan: createFileSchema("File Laporan", false),
   fileSPTJM: createFileSchema("File SPTJM Kebenaran Identitas Jenazah", false),
-});
+}).superRefine((data, ctx) => {
+  if (!data.nik && !data.noAkta) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Minimal salah satu dari NIK atau No. Akta wajib diisi",
+      path: ["nik"],
+    });
+  }
+});;
 
 export const updateSchema = z.object({
-  nik: z
-    .string()
-    .nonempty("NIK wajib diisi")
-    .trim()
-    .regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
-  noAkta: z.string().trim().optional(),
+  // nik: z.string().nonempty("NIK wajib diisi").trim().regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
+  // noAkta: z.string().trim().optional(),
+  nik: z.string().trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka').optional().or(z.literal('')),
+  noAkta: z.string().trim().optional().or(z.literal('')),
   nama: z.string().nonempty("Nama wajib diisi").trim(),
   fileSuratKematian: createFileSchema("File Surat Kematian", false),
   fileKk: createFileSchema("File KK", false),
@@ -27,7 +35,15 @@ export const updateSchema = z.object({
   fileRegister: createFileSchema("File Register", false),
   fileLaporan: createFileSchema("File Laporan", false),
   fileSPTJM: createFileSchema("File SPTJM Kebenaran Identitas Jenazah", false),
-});
+}).superRefine((data, ctx) => {
+  if (!data.nik && !data.noAkta) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Minimal salah satu dari NIK atau No. Akta wajib diisi",
+      path: ["nik"],
+    });
+  }
+});;
 
 export const findAllAktaSchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
@@ -36,7 +52,8 @@ export const findAllAktaSchema = z.object({
   sortBy: z.enum([
     'id',
     'nik',
-    'nama',
+    'noAkta',
+    // 'nama',
     'createdAt',
   ]).optional().default('id'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
@@ -46,7 +63,7 @@ export const aktaKematianSchema = z.object({
   id: z.number(),
   nik: z.string(),
   noAkta: z.string().optional(),
-  nama: z.string(),
+  // nama: z.string(),
   fileSuratKematian: z.string(),
   fileKk: z.string(),
   fileLampiran: z.string(),

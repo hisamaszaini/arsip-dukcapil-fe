@@ -3,7 +3,8 @@ import { createFileSchema } from "./file.types";
 
 export const createSchema = z.object({
     nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
-    nama: z.string().nonempty('Nama wajib diisi').trim(),
+    // nama: z.string().nonempty('Nama wajib diisi').trim(),
+    tanggal: z.string().nonempty('Tanggal wajib diisi').regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal tidak valid'),
     file: createFileSchema("File Surat Kehilangan", true),
 });
 
@@ -13,7 +14,8 @@ export const updateSchema = z.object({
         .nonempty("NIK wajib diisi")
         .trim()
         .regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
-    nama: z.string().nonempty("Nama wajib diisi").trim(),
+    // nama: z.string().nonempty("Nama wajib diisi").trim(),
+    tanggal: z.string().nonempty('Tanggal wajib diisi').regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal tidak valid'),
     file: createFileSchema("File Surat Kehilangan", false),
 });
 
@@ -24,7 +26,8 @@ export const findAllSuratKehilanganSchema = z.object({
     sortBy: z.enum([
         'id',
         'nik',
-        'nama',
+        // 'nama',
+        'tanggal',
         'createdAt',
     ]).optional().default('id'),
     sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
@@ -33,7 +36,8 @@ export const findAllSuratKehilanganSchema = z.object({
 export const SuratKehilanganSchema = z.object({
     id: z.number(),
     nik: z.string(),
-    nama: z.string(),
+    // nama: z.string(),
+    tanggal: z.string(),
     file: z.string(),
     createdAt: z.string(),
     updatedAt: z.string()

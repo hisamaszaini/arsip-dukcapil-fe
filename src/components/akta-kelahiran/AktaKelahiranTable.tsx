@@ -63,7 +63,7 @@ const AktaKelahiranTable: React.FC<AktaKelahiranTableProps> = ({
                         <tr className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                             <th className="px-2 py-5 text-center">No.</th>
                             <SortableHeader columnKey="nik" onSort={onSort} queryParams={queryParams}>No. Akta</SortableHeader>
-                            <SortableHeader columnKey="nama" onSort={onSort} queryParams={queryParams}>Nama</SortableHeader>
+                            {/* <SortableHeader columnKey="nama" onSort={onSort} queryParams={queryParams}>Nama</SortableHeader> */}
                             <th className="px-6 py-3 text-center">Akta Kelahiran</th>
                             <SortableHeader columnKey="createdAt" onSort={onSort} queryParams={queryParams}>
                                 Tanggal Dibuat
@@ -110,7 +110,7 @@ const AktaKelahiranTable: React.FC<AktaKelahiranTableProps> = ({
                                             >
                                                 <td className="px-2 py-4 text-medium text-gray-500 text-center">{startIndex + index + 1}</td>
                                                 <td className="px-4 py-4 font-medium text-gray-900">{akta.noAkta}</td>
-                                                <td className="px-6 py-4 text-medium text-gray-600">{akta.nama}</td>
+                                                {/* <td className="px-6 py-4 text-medium text-gray-600">{akta.nama}</td> */}
                                                 <td className="px-4 py-4 text-center">
                                                     {renderFileCell(akta.fileSuratKelahiran)}
                                                 </td>
@@ -208,7 +208,7 @@ const AktaKelahiranTable: React.FC<AktaKelahiranTableProps> = ({
                                                             {startIndex + index + 1}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className="text-sm font-semibold text-gray-800 truncate">{akta.nama}</p>
+                                                            {/* <p className="text-sm font-semibold text-gray-800 truncate">{akta.nama}</p> */}
                                                             <p className="text-xs text-gray-500">{akta.noAkta}</p>
                                                         </div>
                                                     </div>

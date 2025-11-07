@@ -11,7 +11,7 @@ import {
 } from "../../types/suratPermohonanPindah.types";
 import TextInput from "../ui/TextInput";
 import { Button } from "../ui/Button";
-import { ImageUpload } from "../ui/ImageUpload";
+import MultiImageUpload from "../ui/MultiImageUpload";
 
 interface SuratPermohonanPindahFormModalProps {
     isOpen: boolean;
@@ -165,38 +165,30 @@ const SuratPermohonanPindahFormModal: React.FC<SuratPermohonanPindahFormModalPro
                         {...register("nama")}
                     />
 
-                    {/* Upload Files */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        {fileFields.map((key) => {
-                            const labelMap: Record<string, string> = {
-                                filePmhnPindah: "Surat Permohonan Pindah",
-                                fileKk: "Kartu Keluarga",
-                                fileLampiran: "Lampiran (Opsional)",
-                            };
-                            const label = labelMap[key] || key;
-
-                            return (
-                                <div key={key}>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                                    <ImageUpload
-                                        file={files[key]}
-                                        filePath={
-                                            (editingData as any)?.[key]
-                                                ? (editingData as any)[key]
-                                                : undefined
-                                        }
-                                        onChange={(file) => {
-                                            setFiles((prev) => ({ ...prev, [key]: file }));
-                                            setValue(key as keyof CreateDto, file);
-                                        }}
-                                    />
-                                    {errors[key as keyof CreateDto] && (
-                                        <p className="text-red-600 text-sm mt-1">{errors[key as keyof CreateDto]?.message}</p>
-                                    )}
-                                </div>
+                    <MultiImageUpload
+                        mode={isEditing ? "edit" : "create"}
+                        label="Unggah Berkas Pendukung"
+                        fileFields={[
+                            { key: "filePmhnPindah", label: "Surat Permohonan Pindah" },
+                            { key: "fileKk", label: "Kartu Keluarga (KK)" },
+                            { key: "fileLampiran", label: "Lampiran (Opsional)" },
+                        ]}
+                        initialFiles={
+                            isEditing && editingData
+                                ? {
+                                    filePmhnPindah: editingData.filePmhnPindah || null,
+                                    fileKk: editingData.fileKk || null,
+                                    fileLampiran: editingData.fileLampiran || null,
+                                }
+                                : undefined
+                        }
+                        onChange={(mapped) => {
+                            setFiles(mapped);
+                            Object.entries(mapped).forEach(([key, file]) =>
+                                setValue(key as keyof CreateDto, file)
                             );
-                        })}
-                    </div>
+                        }}
+                    />
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                         <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>

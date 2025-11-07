@@ -42,7 +42,11 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
         formState: { errors, isSubmitting },
     } = useForm<CreateDto | UpdateDto>({
         resolver: zodResolver(schema),
-        defaultValues: { nik: "", nama: "" },
+        defaultValues: {
+            nik: "",
+            // nama: ""
+            tanggal: "",
+        },
     });
 
     const [files, setFiles] = useState<Record<string, File | null>>(
@@ -53,7 +57,13 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             if (isEditing && editingData) {
-                reset({ nik: editingData.nik, nama: editingData.nama });
+                reset({
+                    nik: editingData.nik,
+                    // nama: editingData.nama
+                    tanggal: editingData.tanggal
+                        ? editingData.tanggal.split("T")[0]
+                        : "",
+                });
                 const initialFiles: Record<string, File | null> = {};
                 fileFields.forEach((f) => {
                     initialFiles[f] = null; // file baru null
@@ -155,7 +165,7 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                         {...register("nik")}
                     />
 
-                    <TextInput
+                    {/* <TextInput
                         id="nama"
                         label="Nama Lengkap"
                         placeholder="Masukkan Nama Lengkap..."
@@ -163,38 +173,45 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                         error={errors.nama?.message}
                         className="uppercase"
                         {...register("nama")}
+                    /> */}
+
+                    <TextInput
+                        id="tanggal"
+                        type="date"
+                        label="Tanggal Kehilangan"
+                        required={true}
+                        error={errors.tanggal?.message}
+                        {...register("tanggal")}
                     />
 
                     {/* Upload Files */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        {fileFields.map((key) => {
-                            const labelMap: Record<string, string> = {
-                                file: "Surat Kehilangan",
-                            };
-                            const label = labelMap[key] || key;
+                    {fileFields.map((key) => {
+                        const labelMap: Record<string, string> = {
+                            file: "Surat Kehilangan",
+                        };
+                        const label = labelMap[key] || key;
 
-                            return (
-                                <div key={key}>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                                    <ImageUpload
-                                        file={files[key]}
-                                        filePath={
-                                            (editingData as any)?.[key]
-                                                ? (editingData as any)[key]
-                                                : undefined
-                                        }
-                                        onChange={(file) => {
-                                            setFiles((prev) => ({ ...prev, [key]: file }));
-                                            setValue(key as keyof CreateDto, file);
-                                        }}
-                                    />
-                                    {errors[key as keyof CreateDto] && (
-                                        <p className="text-red-600 text-sm mt-1">{errors[key as keyof CreateDto]?.message}</p>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
+                        return (
+                            <div className="w-full mb-4" key={key}>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                                <ImageUpload
+                                    file={files[key]}
+                                    filePath={
+                                        (editingData as any)?.[key]
+                                            ? (editingData as any)[key]
+                                            : undefined
+                                    }
+                                    onChange={(file) => {
+                                        setFiles((prev) => ({ ...prev, [key]: file }));
+                                        setValue(key as keyof CreateDto, file);
+                                    }}
+                                />
+                                {errors[key as keyof CreateDto] && (
+                                    <p className="text-red-600 text-sm mt-1">{errors[key as keyof CreateDto]?.message}</p>
+                                )}
+                            </div>
+                        );
+                    })}
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                         <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>

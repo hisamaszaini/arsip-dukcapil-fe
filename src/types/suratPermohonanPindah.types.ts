@@ -3,7 +3,7 @@ import { createFileSchema } from "./file.types";
 
 export const createSchema = z.object({
     nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
-    nama: z.string().nonempty('Nama wajib diisi').trim(),
+    // nama: z.string().nonempty('Nama wajib diisi').trim(),
     filePmhnPindah: createFileSchema("File Permohonan Pindah", true),
     fileKk: createFileSchema("File KK", true),
     fileLampiran: createFileSchema("File Lampiran", false),
@@ -11,7 +11,7 @@ export const createSchema = z.object({
 
 export const updateSchema = z.object({
     nik: z.string().nonempty("NIK wajib diisi").trim().regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
-    nama: z.string().nonempty("Nama wajib diisi").trim(),
+    // nama: z.string().nonempty("Nama wajib diisi").trim(),
 
     filePmhnPindah: createFileSchema("File Permohonan Pindah", false),
     fileKk: createFileSchema("File KK", false),
@@ -25,7 +25,7 @@ export const findAllSuratPermohonanPindahSchema = z.object({
     sortBy: z.enum([
         'id',
         'nik',
-        'nama',
+        // 'nama',
         'createdAt',
     ]).optional().default('id'),
     sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
@@ -34,9 +34,10 @@ export const findAllSuratPermohonanPindahSchema = z.object({
 export const SuratPermohonanPindahSchema = z.object({
     id: z.number(),
     nik: z.string(),
-    nama: z.string(),
+    // nama: z.string(),
     filePmhnPindah: z.string(),
     fileKk: z.string(),
+    fileLampiran: z.string().optional(),
     createdAt: z.string(),
     updatedAt: z.string()
 });

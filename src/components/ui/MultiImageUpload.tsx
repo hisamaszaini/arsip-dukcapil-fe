@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Button } from "./Button";
+import { ExternalLink } from "lucide-react";
 
 interface FileField {
     key: string;
@@ -153,7 +155,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                         <img
                                             src={previews[key]!}
                                             alt={label}
-                                            className="w-full h-40 object-contain border-2 border-dashed border-gray-300 rounded-md bg-gray-100 cursor-pointer hover:opacity-90 transition"
+                                            className="w-full min-h-44 max-h-[300px] object-contain border-2 border-dashed border-gray-300 rounded-md bg-gray-100 cursor-pointer hover:opacity-90 transition"
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 const input = document.getElementById(
@@ -164,7 +166,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                         />
                                     ) : (
                                         <div
-                                            className="w-full h-40 border-2 border-dashed border-gray-300 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-sm italic cursor-pointer"
+                                            className="w-full min-h-44 max-h-[300px] border-2 border-dashed border-gray-300 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 text-sm italic cursor-pointer"
                                             onClick={() => {
                                                 const input = document.getElementById(
                                                     `create-upload-${key}`
@@ -192,7 +194,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
             {/* ======== MODE EDIT ======== */}
             {mode === "edit" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-3">
+                <div className="w-full">
                     {fileFields.map(({ key, label }) => (
                         <div key={key} className="flex flex-col">
                             <label className="block text-base font-medium text-gray-700 mb-1">
@@ -204,7 +206,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                     <img
                                         src={previews[key]!}
                                         alt={label}
-                                        className="w-full h-44 object-contain border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:opacity-90 transition"
+                                        className="w-full max-h-[300px] object-contain border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:opacity-90 transition"
                                         onClick={() => {
                                             const input = document.getElementById(
                                                 `edit-upload-${key}`
@@ -214,7 +216,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                                     />
                                 ) : (
                                     <div
-                                        className="w-full h-44 flex items-center justify-center border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 text-gray-400 italic text-sm mb-2 cursor-pointer"
+                                        className="w-full min-h-44 max-h-[300px] object-contain flex items-center justify-center border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 text-gray-400 italic text-sm mb-2 cursor-pointer"
                                         onClick={() => {
                                             const input = document.getElementById(
                                                 `edit-upload-${key}`
@@ -236,16 +238,18 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
 
                                 {/* Optional tombol buka di tab baru */}
                                 {previews[key] && (
-                                    <button
+                                    <Button
+                                        variant="secondary"
                                         type="button"
+                                        className="absolute bottom-2 right-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 shadow-sm text-sm px-2 py-1 flex items-center space-x-1"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             window.open(previews[key]!, "_blank");
                                         }}
-                                        className="absolute top-2 right-2 bg-white text-blue-400 border border-blue-400 rounded-full px-2 py-1 text-xs shadow hover:bg-gray-200 cursor-pointer transition"
                                     >
-                                        Buka
-                                    </button>
+                                        <ExternalLink className="w-4 h-4" />
+                                        <span>Buka</span>
+                                    </Button>
                                 )}
                             </div>
                         </div>

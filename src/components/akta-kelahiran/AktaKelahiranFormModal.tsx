@@ -14,22 +14,26 @@ import { Button } from "../ui/Button";
 import MultiImageUpload from "../ui/MultiImageUpload";
 
 const formatAktaNumber = (value: string) => {
-  const prefix = "3520-LU-";
+  const prefix = "3520-";
   if (!value) return prefix;
 
   if (!value.startsWith(prefix)) {
     return prefix;
   }
-  const userInput = value.substring(prefix.length).replace(/\D/g, "");
+
+  const raw = value.substring(prefix.length).toUpperCase();
+
+  const letters = raw.replace(/[^A-Z]/g, "").substring(0, 2);
+
+  const numbers = raw.replace(/[^\d]/g, "");
+  const datePart = numbers.substring(0, 8);
+  const seqPart = numbers.substring(8, 12);
 
   let formatted = prefix;
-  const datePart = userInput.substring(0, 8);
-  formatted += datePart;
+  if (letters) formatted += letters;
+  if (datePart) formatted += `-${datePart}`;
+  if (seqPart) formatted += `-${seqPart}`;
 
-  if (userInput.length > 8) {
-    const sequencePart = userInput.substring(8, 12);
-    formatted += "-" + sequencePart;
-  }
   return formatted.substring(0, 22);
 };
 
@@ -60,15 +64,15 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
 
   const {
     control,
-    register,
+    // register,
     handleSubmit,
     reset,
     setError,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<CreateDto | UpdateDto>({
     resolver: zodResolver(schema),
-    defaultValues: { noAkta: "3520-LU-", nama: "" },
+    defaultValues: { noAkta: "3520-" },
   });
 
   const [files, setFiles] = useState<Record<string, File | null>>(
@@ -78,8 +82,8 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       reset({
-        noAkta: editingData?.noAkta || "3520-LU-",
-        nama: editingData?.nama || "",
+        noAkta: editingData?.noAkta || "3520-",
+        // nama: editingData?.nama || "",
       });
 
       const initialFiles: Record<string, File | null> = {};
@@ -168,7 +172,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
               <TextInput
                 id="noAkta"
                 label="No. Akta"
-                placeholder="3520-LU-DDMMYYYY-XXXX"
+                placeholder="3520-XY-DDMMYYYY-XXXX"
                 required
                 error={error?.message}
                 value={value}
@@ -177,7 +181,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
             )}
           />
 
-          <TextInput
+          {/* <TextInput
             id="nama"
             label="Nama Lengkap"
             placeholder="Masukkan Nama Lengkap..."
@@ -185,7 +189,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
             error={errors.nama?.message}
             className="uppercase"
             {...register("nama")}
-          />
+          /> */}
 
           <MultiImageUpload
             mode={isEditing ? "edit" : "create"}
@@ -217,7 +221,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
               );
             }}
           />
-          
+
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <Button
               type="button"
