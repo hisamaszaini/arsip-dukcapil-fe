@@ -31,31 +31,19 @@ const DashboardChart: React.FC<DashboardChartProps> = ({ data }) => {
             {
                 label: 'Akta Kelahiran',
                 data: data.map(stat => stat.aktaKelahiran),
-                backgroundColor: '#10b981', // emerald
+                backgroundColor: '#10b981',
                 borderRadius: 4,
             },
             {
                 label: 'Akta Kematian',
                 data: data.map(stat => stat.aktaKematian),
-                backgroundColor: '#64748b', // slate
+                backgroundColor: '#64748b',
                 borderRadius: 4,
             },
             {
                 label: 'Surat Kehilangan',
                 data: data.map(stat => stat.suratKehilangan),
-                backgroundColor: '#f59e0b', // amber
-                borderRadius: 4,
-            },
-            {
-                label: 'Surat Permohonan Pindah',
-                data: data.map(stat => stat.suratPermohonanPindah),
-                backgroundColor: '#3b82f6', // blue
-                borderRadius: 4,
-            },
-            {
-                label: 'Surat Perubahan Kependudukan',
-                data: data.map(stat => stat.suratPerubahanKependudukan),
-                backgroundColor: '#8b5cf6', // purple
+                backgroundColor: '#f59e0b', 
                 borderRadius: 4,
             },
         ],
@@ -68,7 +56,7 @@ const DashboardChart: React.FC<DashboardChartProps> = ({ data }) => {
             legend: {
                 position: 'top' as const,
                 labels: {
-                    boxWidth: 18,
+                    boxWidth: 20,
                     font: {
                         size: 12,
                     },
