@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSuratPerubahanKependudukanData } from '../hooks/useSuratPerubahanKependudukanData';
-import type { SuratPerubahanKependudukan, CreateDto, UpdateDto } from '../types/suratPerubahanKependudukan.types';
+import type { SuratPerubahanKependudukan } from '../types/suratPerubahanKependudukan.types';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/Button';
 import SuratPerubahanKependudukanFilter from '../components/surat-perubahan-kependudukan/SuratPerubahanKependudukanFilter';
@@ -42,7 +42,7 @@ const SuratPerubahanKependudukanPage: React.FC = () => {
         setEditingSuratPerubahanKependudukan(null);
     };
 
-    const handleSave = async (formData: CreateDto | UpdateDto, id: number | null) => {
+    const handleSave = async (formData: FormData, id: number | null) => {
         try {
             await saveSuratPerubahanKependudukan(formData, id);
             toast.success(`Berhasil ${editingSuratPerubahanKependudukan ? 'memperbarui' : 'menambahkan'} surat perubahan kependudukan`)
