@@ -12,7 +12,7 @@ const AktaKelahiranFilter: React.FC<UserFilterProps> = ({ searchTerm, setSearchT
             {/* Input Pencarian */}
             <div>
                 <label htmlFor="search-user" className="block text-sm font-medium text-gray-600 mb-1">
-                    Cari Nomor Akta
+                    Cari menggunakan Nomor Akta
                 </label>
                 <input
                     id="search-user"

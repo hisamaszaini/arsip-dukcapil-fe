@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSuratPermohonanPindahData } from '../hooks/useSuratPermohonanPindahData';
-import type { SuratPermohonanPindah, CreateDto, UpdateDto } from '../types/suratPermohonanPindah.types';
+import type { SuratPermohonanPindah } from '../types/suratPermohonanPindah.types';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/Button';
 import SuratPermohonanPindahFilter from '../components/surat-permohonan-pindah/SuratPermohonanPindahFilter';
@@ -8,6 +8,7 @@ import SuratPermohonanPindahTable from '../components/surat-permohonan-pindah/Su
 import Pagination from '../components/ui/Pagination';
 import SuratPermohonanPindahFormModal from '../components/surat-permohonan-pindah/SuratPermohonanPindahFormModal';
 import { ConfirmationModal } from '../components/ui/ConfirmationModal';
+import { handleApiError } from '../lib/handleApiError';
 
 const SuratPermohonanPindahPage: React.FC = () => {
     const {
@@ -42,15 +43,13 @@ const SuratPermohonanPindahPage: React.FC = () => {
         setEditingSuratPermohonanPindah(null);
     };
 
-    const handleSave = async (formData: CreateDto | UpdateDto, id: number | null) => {
+    const handleSave = async (formData: FormData, id: number | null) => {
         try {
             await saveSuratPermohonanPindah(formData, id);
             toast.success(`Berhasil ${editingSuratPermohonanPindah ? 'memperbarui' : 'menambahkan'} surat permohonan pindah`)
             handleCloseModal();
         } catch (error) {
-            console.error("Gagal menyimpan data Surat Permohonan Pindah:", error);
-            toast.error(`Gagal ${editingSuratPermohonanPindah ? 'memperbarui' : 'menambahkan'} surat permohonan pindah`)
-            throw error;
+            handleApiError(error);
         }
     };
 

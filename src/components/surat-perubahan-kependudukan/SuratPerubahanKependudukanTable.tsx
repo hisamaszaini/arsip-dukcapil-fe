@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { SortableHeader } from '../ui/SortableHeader';
 import { formatTanggal } from '../../utils/date';
 import { ChevronDown } from 'lucide-react';
-import type { SuratPerubahanKependudukan, SuratPerubahanKependudukanSortableKeys, FindAllSuratPerubahanKependudukanDto } from '../../types/suratPerubahanKependudukan.types';
+import type {
+    SuratPerubahanKependudukan,
+    SuratPerubahanKependudukanSortableKeys,
+    FindAllSuratPerubahanKependudukanDto,
+} from '../../types/suratPerubahanKependudukan.types';
 
 interface SuratPerubahanKependudukanTableProps {
     userList: SuratPerubahanKependudukan[];
@@ -13,6 +17,8 @@ interface SuratPerubahanKependudukanTableProps {
     onDelete: (id: number) => void;
 }
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
 const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableProps> = ({
     userList,
     isLoading,
@@ -22,7 +28,14 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
     onDelete,
 }) => {
     const [expandedAccordions, setExpandedAccordions] = useState<Record<number, boolean>>({});
-        const startIndex = ((queryParams.page || 1) - 1) * (queryParams.limit || 10);
+    const startIndex = ((queryParams.page || 1) - 1) * (queryParams.limit || 10);
+
+    const toggleAccordion = (id: number) => {
+        setExpandedAccordions((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
 
     const renderState = (message: string, colSpan: number) => {
         if (typeof window !== 'undefined' && window.innerWidth < 768) {
@@ -37,22 +50,17 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
         );
     };
 
-    const renderFileCell = (url?: string) => {
-        if (!url) return <span className="text-gray-400 italic">-</span>;
-        return (
-            <a
-                href={`${import.meta.env.VITE_API_BASE_URL}/uploads/${url}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors" title="Lihat Bukti PDF"><i className="fas fa-file-image mr-1 sm:mr-1.5"></i> JPG</a>
-        );
-    };
-
-    const toggleAccordion = (id: number) => {
-        setExpandedAccordions(prev => ({
-            [id]: !prev[id],
-        }));
-    };
+    const renderFileLink = (filePath: string, fileName?: string) => (
+        <a
+            href={`${API_URL}/uploads/${filePath}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+            title={fileName || 'Lihat File'}
+        >
+            <i className="fas fa-file-image mr-1 sm:mr-1.5"></i> JPG
+        </a>
+    );
 
     return (
         <>
@@ -62,12 +70,16 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
                     <thead className="bg-gray-50">
                         <tr className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                             <th className="px-2 py-5 text-center">No.</th>
-                            <SortableHeader columnKey="nik" onSort={onSort} queryParams={queryParams}>NIK</SortableHeader>
-                            <SortableHeader columnKey="nama" onSort={onSort} queryParams={queryParams}>Nama</SortableHeader>
-                            <th className="px-6 py-3 text-center">Surat Perubahan Kependudukan</th>
+                            <SortableHeader columnKey="nik" onSort={onSort} queryParams={queryParams}>
+                                NIK
+                            </SortableHeader>
+                            <SortableHeader columnKey="noFisik" onSort={onSort} queryParams={queryParams}>
+                                No. Fisik
+                            </SortableHeader>
                             <SortableHeader columnKey="createdAt" onSort={onSort} queryParams={queryParams}>
                                 Tanggal Dibuat
                             </SortableHeader>
+                            <th className="px-6 py-3 text-center">Lampiran</th>
                             <th className="px-6 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -75,62 +87,63 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
                         {isLoading
                             ? renderState('Memuat data...', 6)
                             : userList.length === 0
-                                ? renderState('Tidak ada data surat permohonan pindah.', 6)
+                                ? renderState('Tidak ada data surat perubahan kependudukan.', 6)
                                 : userList.map((surat, index) => {
-                                    const { filePerubahan, ...otherFiles } = surat;
-                                    const labelMap: Record<string, string> = {
-                                        fileKk: "Kartu Keluarga (KK)",
-                                        fileLampiran: "Lampiran (Opsional"
-                                    };
-                                    const otherFileEntries = Object.keys(labelMap)
-                                        .map(key => {
-                                            const url = otherFiles[key as keyof typeof otherFiles];
-                                            if (typeof url === 'string' && url) {
-                                                return { label: labelMap[key], url };
-                                            }
-                                            return null;
-                                        })
-                                        .filter((e): e is { label: string; url: string } => e !== null);
-
+                                    const files = surat.arsipFiles || [];
                                     const isExpanded = !!expandedAccordions[surat.id];
-                                    const hasOtherFiles = otherFileEntries.length > 0;
+                                    const hasFiles = files.length > 0;
 
                                     return (
                                         <React.Fragment key={surat.id}>
                                             <tr
-                                                onClick={() => hasOtherFiles && toggleAccordion(surat.id)}
-                                                className={`
-                                                transition-colors duration-150
-                                                ${isExpanded ? 'bg-indigo-50' : 'bg-white'}
-                                                ${hasOtherFiles ? 'cursor-pointer hover:bg-gray-50' : ''}
-                                            `}
+                                                onClick={() => hasFiles && toggleAccordion(surat.id)}
+                                                className={`transition-colors duration-150 ${isExpanded ? 'bg-indigo-50' : 'bg-white'
+                                                    } ${hasFiles ? 'cursor-pointer hover:bg-gray-50' : ''}`}
                                             >
-                                                <td className="px-2 py-4 text-medium text-gray-500 text-center">{ startIndex + index + 1}</td>
-                                                <td className="px-4 py-4 font-medium text-gray-900">{surat.nik}</td>
-                                                <td className="px-6 py-4 text-medium text-gray-600">{surat.nama}</td>
-                                                <td className="px-4 py-4 text-center">
-                                                    {renderFileCell(surat.filePerubahan)}
+                                                <td className="px-2 py-4 text-medium text-gray-500 text-center">
+                                                    {startIndex + index + 1}
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-700">{formatTanggal(surat.createdAt)}</td>
-                                                <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                                <td className="px-4 py-4 font-medium text-gray-900">{surat.nik}</td>
+                                                <td className="px-4 py-4 text-gray-700">{surat.noFisik}</td>
+                                                <td className="px-4 py-4 text-gray-700">{formatTanggal(surat.createdAt)}</td>
+                                                <td className="px-4 py-4 text-center">
+                                                    {hasFiles ? (
+                                                        <span className="text-sm text-gray-600">
+                                                            {files.length} file{files.length > 1 ? 's' : ''}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 italic">-</span>
+                                                    )}
+                                                </td>
+                                                <td
+                                                    className="px-6 py-4 text-center"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     <div className="flex justify-center items-center gap-2">
-                                                        <button onClick={() => onEdit(surat)} title="Edit Data" className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors cursor-pointer">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                            </svg>
+                                                        <button
+                                                            onClick={() => onEdit(surat)}
+                                                            title="Edit Data"
+                                                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors cursor-pointer"
+                                                        >
+                                                            <i className="fas fa-edit"></i>
                                                         </button>
-                                                        <button onClick={() => onDelete(surat.id)} title="Hapus Data" className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path> </svg>
+                                                        <button
+                                                            onClick={() => onDelete(surat.id)}
+                                                            title="Hapus Data"
+                                                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer"
+                                                        >
+                                                            <i className="fas fa-trash"></i>
                                                         </button>
-                                                        {hasOtherFiles && (
+                                                        {hasFiles && (
                                                             <button
                                                                 onClick={() => toggleAccordion(surat.id)}
                                                                 className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 transition-colors"
-                                                                aria-label={isExpanded ? "Tutup detail" : "Buka detail"}
-                                                                title={isExpanded ? "Tutup detail" : "Buka detail"}
+                                                                aria-label={isExpanded ? 'Tutup detail' : 'Buka detail'}
+                                                                title={isExpanded ? 'Tutup detail' : 'Buka detail'}
                                                             >
                                                                 <ChevronDown
-                                                                    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                                                    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                                                                        }`}
                                                                 />
                                                             </button>
                                                         )}
@@ -138,16 +151,24 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
                                                 </td>
                                             </tr>
 
-                                            {isExpanded && (
+                                            {/* Accordion File List */}
+                                            {isExpanded && hasFiles && (
                                                 <tr className="bg-white">
                                                     <td colSpan={6}>
                                                         <div className="p-4 bg-slate-50/70">
-                                                            <h4 className="text-sm font-semibold mb-3 text-slate-800">Lampiran Lainnya:</h4>
+                                                            <h4 className="text-sm font-semibold mb-3 text-slate-800">
+                                                                Lampiran:
+                                                            </h4>
                                                             <div className="pl-4 space-y-3 border-l-2 border-indigo-200 max-w-md">
-                                                                {otherFileEntries.map((file) => (
-                                                                    <div key={file.label} className="flex justify-between items-center pr-1">
-                                                                        <span className="text-sm text-gray-700">{file.label}</span>
-                                                                        <div>{renderFileCell(file.url)}</div>
+                                                                {files.map((file) => (
+                                                                    <div
+                                                                        key={file.id}
+                                                                        className="flex justify-between items-center pr-1"
+                                                                    >
+                                                                        <span className="text-sm text-gray-700 truncate max-w-[180px]">
+                                                                            {file.originalName}
+                                                                        </span>
+                                                                        {renderFileLink(file.path, file.originalName)}
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -162,87 +183,88 @@ const SuratPerubahanKependudukanTable: React.FC<SuratPerubahanKependudukanTableP
                 </table>
             </div>
 
-            {/* Mobile Card View */}
+            {/* Mobile View */}
             <div className="md:hidden">
                 {isLoading
                     ? renderState('Memuat data...', 6)
                     : userList.length === 0
-                        ? renderState('Tidak ada data surat permohonan pindah.', 6)
+                        ? renderState('Tidak ada data surat perubahan kependudukan.', 6)
                         : (
                             <div className="space-y-4">
                                 {userList.map((surat, index) => {
-                                    const labelMap: Record<string, string> = {
-                                        filePerubahan: "Surat Perubahan Kependudukan",
-                                        fileKk: "Kartu Keluarga (KK)",
-                                        fileLampiran: "Lampiran (Opsional"
-                                    };
-
-                                    const fileEntries = Object.keys(labelMap)
-                                        .map(key => {
-                                            const url = surat[key as keyof typeof surat];
-                                            if (typeof url === 'string' && url) {
-                                                return {
-                                                    label: labelMap[key],
-                                                    url: url,
-                                                };
-                                            }
-                                            return null;
-                                        })
-                                        .filter((entry): entry is { label: string; url: string } => entry !== null);
-
+                                    const files = surat.arsipFiles || [];
                                     const isExpanded = !!expandedAccordions[surat.id];
 
                                     return (
-                                        <div key={surat.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-all duration-300">
-                                            {/* Card Header (tidak berubah) */}
-                                            <div className="bg-gray-50/70 px-4 py-3 border-b border-gray-200">
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <div className="flex items-center space-x-3 min-w-0">
-                                                        <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">
-                                                            {startIndex + index + 1}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-sm font-semibold text-gray-800 truncate">{surat.nama}</p>
-                                                            <p className="text-xs text-gray-500">{surat.nik}</p>
-                                                        </div>
+                                        <div
+                                            key={surat.id}
+                                            className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-all duration-300"
+                                        >
+                                            <div className="bg-gray-50/70 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                                                <div>
+                                                    <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">
+                                                        {startIndex + index + 1}
                                                     </div>
-                                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                                        <button onClick={() => onEdit(surat)} title="Edit Data" aria-label="Edit Data SuratPerubahanKependudukan" className="w-10 h-10 flex items-center justify-center rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors cursor-pointer">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                            </svg>
-                                                        </button>
-                                                        <button onClick={() => onDelete(surat.id)} title="Hapus Data" aria-label="Hapus Data SuratPerubahanKependudukan" className="w-10 h-10 flex items-center justify-center rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer">
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path> </svg>
-                                                        </button>
-                                                    </div>
+                                                    <p className="font-semibold text-gray-800 text-sm">
+                                                        {surat.nik}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {formatTanggal(surat.createdAt)}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => onEdit(surat)}
+                                                        title="Edit"
+                                                        className="w-9 h-9 flex items-center justify-center rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors"
+                                                    >
+                                                        <i className="fas fa-edit"></i>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => onDelete(surat.id)}
+                                                        title="Hapus"
+                                                        className="w-9 h-9 flex items-center justify-center rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
                                                 </div>
                                             </div>
 
-                                            {/* Card Body */}
-                                            <div className="p-4 text-sm space-y-3">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-500">Tanggal Dibuat</span>
-                                                    <span className="font-medium text-gray-700">{formatTanggal(surat.createdAt)}</span>
+                                            <div className="p-4 space-y-2 text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-500">No Fisik:</span>
+                                                    <span className="font-medium text-gray-800">{surat.noFisik}</span>
                                                 </div>
-                                                {fileEntries.length > 0 && (
+
+                                                {files.length > 0 && (
                                                     <div className="border-t border-gray-200 pt-3">
                                                         <button
                                                             onClick={() => toggleAccordion(surat.id)}
                                                             className="w-full flex justify-between items-center text-left"
-                                                            aria-expanded={isExpanded}
                                                         >
                                                             <span className="font-medium text-gray-600">
-                                                                Lampiran ({fileEntries.length} file)
+                                                                Lampiran ({files.length})
                                                             </span>
-                                                            <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                                            <ChevronDown
+                                                                className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''
+                                                                    }`}
+                                                            />
                                                         </button>
-                                                        <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 mt-3' : 'max-h-0'}`}>
-                                                            <div className="pl-2 space-y-3 border-l-2 border-blue-200">
-                                                                {fileEntries.map((file) => (
-                                                                    <div key={file.label} className="flex justify-between items-center pr-1">
-                                                                        <span className="text-sm text-gray-700">{file.label}</span>
-                                                                        <div>{renderFileCell(file.url)}</div>
+
+                                                        <div
+                                                            className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 mt-3' : 'max-h-0'
+                                                                }`}
+                                                        >
+                                                            <div className="pl-2 space-y-2 border-l-2 border-blue-200">
+                                                                {files.map((file) => (
+                                                                    <div
+                                                                        key={file.id}
+                                                                        className="flex justify-between items-center pr-1"
+                                                                    >
+                                                                        <span className="text-gray-700 text-sm truncate max-w-[150px]">
+                                                                            {file.originalName}
+                                                                        </span>
+                                                                        {renderFileLink(file.path, file.originalName)}
                                                                     </div>
                                                                 ))}
                                                             </div>

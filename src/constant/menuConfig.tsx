@@ -2,7 +2,6 @@ import type { NavigationItem } from "../types/navigation.types.ts";
 import {
   Home,
   FileText,
-  Inbox,
   File,
   User,
   User2,
@@ -18,7 +17,7 @@ export const menuConfig: Record<UserRole, NavigationItem[]> = {
       label: 'Layanan Arsip',
       icon: FileText,
       children: [
-        { label: 'Akta Kelahiran', path: '/admin/layanan-arsip/akta-kelahiran', icon: Inbox },
+        { label: 'Akta Kelahiran', path: '/admin/layanan-arsip/akta-kelahiran', icon: File },
         { label: 'Akta Kematian', path: '/admin/layanan-arsip/akta-kematian', icon: File },
         { label: 'Surat Kehilangan', path: '/admin/layanan-arsip/surat-kehilangan', icon: File },
         { label: 'Surat Permohonan Pindah', path: '/admin/layanan-arsip/surat-permohonan-pindah', icon: File },
@@ -34,7 +33,7 @@ export const menuConfig: Record<UserRole, NavigationItem[]> = {
       label: 'Layanan Arsip',
       icon: FileText,
       children: [
-        { label: 'Akta Kelahiran', path: '/operator/layanan-arsip/akta-kelahiran', icon: Inbox },
+        { label: 'Akta Kelahiran', path: '/operator/layanan-arsip/akta-kelahiran', icon: File },
         { label: 'Akta Kematian', path: '/operator/layanan-arsip/akta-kematian', icon: File },
         { label: 'Surat Kehilangan', path: '/operator/layanan-arsip/surat-kehilangan', icon: File },
         { label: 'Surat Permohonan Pindah', path: '/operator/layanan-arsip/surat-permohonan-pindah', icon: File },

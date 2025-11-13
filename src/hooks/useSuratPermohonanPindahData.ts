@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { PaginationMeta } from '../types/api.types';
-import type { SuratPermohonanPindah, CreateDto, FindAllSuratPermohonanPindahDto, UpdateDto, SuratPermohonanPindahSortableKeys } from '../types/suratPermohonanPindah.types';
+import type { SuratPermohonanPindah, FindAllSuratPermohonanPindahDto, SuratPermohonanPindahSortableKeys } from '../types/suratPermohonanPindah.types';
 import suratPermohonanPindahService from '../services/suratPermohonanPindahService';
 
 export const useSuratPermohonanPindahData = () => {
@@ -23,7 +23,7 @@ export const useSuratPermohonanPindahData = () => {
             setSuratPermohonanPindahList(response.data);
             setPaginationMeta(response.meta || null);
         } catch (error) {
-            console.error("Gagal memuat data pengguna:", error);
+            console.error("Gagal memuat data akta kelahiran:", error);
         } finally {
             setIsLoading(false);
         }
@@ -62,18 +62,16 @@ export const useSuratPermohonanPindahData = () => {
         return await suratPermohonanPindahService.findOne(id);
     }, []);
 
-    const saveSuratPermohonanPindah = useCallback(async (formData: CreateDto | UpdateDto, id: number | null) => {
-        const { ...payload } = formData;
-
+    const saveSuratPermohonanPindah = useCallback(async (formData: FormData, id: number | null) => {
         if (id) {
-            const updatePayload: UpdateDto = { ...payload };
-            await suratPermohonanPindahService.update(id, updatePayload);
+            await suratPermohonanPindahService.update(id, formData);
             setQueryParams(prev => ({ ...prev }));
         } else {
-            await suratPermohonanPindahService.create(payload as CreateDto);
+            await suratPermohonanPindahService.create(formData);
             setQueryParams(prev => ({ ...prev, page: 1 }));
         }
     }, []);
+
 
     const deleteSuratPermohonanPindah = useCallback(async (id: number) => {
         await suratPermohonanPindahService.remove(id);

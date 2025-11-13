@@ -1,18 +1,12 @@
-import { findAllAktaSchema, type AktaKematian, type CreateDto, type FindAllAktaDto, type UpdateDto } from "../types/aktaKematian.types";
+import { findAllAktaSchema, type AktaKematian, type FindAllAktaDto } from "../types/aktaKematian.types";
 import type { ApiResponse } from "../types/api.types";
 import api from "./api";
 
 export const aktaKematianService = {
-    async create(data: CreateDto): Promise<ApiResponse<AktaKematian>> {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value instanceof File) {
-                formData.append(key, value);
-            } else if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
+    async create(formData: FormData): Promise<ApiResponse<AktaKematian>> {
+        const response = await api.post('/akta-kematian', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const response = await api.post('/akta-kematian', formData);
         return response.data;
     },
 
@@ -28,16 +22,15 @@ export const aktaKematianService = {
         return response.data;
     },
 
-    async update(id: number, data: UpdateDto): Promise<ApiResponse<AktaKematian>> {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value instanceof File) {
-                formData.append(key, value);
-            } else if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
+    async update(id: number, formData: FormData): Promise<ApiResponse<AktaKematian>> {
+        const response = await api.patch(`/akta-kematian/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const response = await api.patch(`/akta-kematian/${id}`, formData);
+        return response.data;
+    },
+
+    async removeFile(id: number): Promise<ApiResponse>{
+        const response = await api.delete(`/akta-kematian/file/${id}`);
         return response.data;
     },
 

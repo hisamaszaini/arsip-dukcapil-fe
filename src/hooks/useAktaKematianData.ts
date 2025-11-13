@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { PaginationMeta } from '../types/api.types';
-import type { AktaKematian, CreateDto, FindAllAktaDto, UpdateDto, AktaKematianSortableKeys } from '../types/aktaKematian.types';
+import type { AktaKematian, FindAllAktaDto, AktaKematianSortableKeys } from '../types/aktaKematian.types';
 import aktaKematianService from '../services/aktaKematianService';
 
 export const useAktaKematianData = () => {
@@ -62,18 +62,16 @@ export const useAktaKematianData = () => {
         return await aktaKematianService.findOne(id);
     }, []);
 
-    const saveAktaKematian = useCallback(async (formData: CreateDto | UpdateDto, id: number | null) => {
-        const { ...payload } = formData;
-
+    const saveAktaKematian = useCallback(async (formData: FormData, id: number | null) => {
         if (id) {
-            const updatePayload: UpdateDto = { ...payload };
-            await aktaKematianService.update(id, updatePayload);
+            await aktaKematianService.update(id, formData);
             setQueryParams(prev => ({ ...prev }));
         } else {
-            await aktaKematianService.create(payload as CreateDto);
+            await aktaKematianService.create(formData);
             setQueryParams(prev => ({ ...prev, page: 1 }));
         }
     }, []);
+
 
     const deleteAktaKematian = useCallback(async (id: number) => {
         await aktaKematianService.remove(id);

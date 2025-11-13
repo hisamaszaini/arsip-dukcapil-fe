@@ -1,18 +1,12 @@
-import { findAllAktaSchema, type AktaKelahiran, type CreateDto, type FindAllAktaDto, type UpdateDto } from "../types/aktaKelahiran.types";
+import { findAllAktaSchema, type AktaKelahiran, type FindAllAktaDto } from "../types/aktaKelahiran.types";
 import type { ApiResponse } from "../types/api.types";
 import api from "./api";
 
 export const aktaKelahiranService = {
-    async create(data: CreateDto): Promise<ApiResponse<AktaKelahiran>> {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value instanceof File) {
-                formData.append(key, value);
-            } else if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
+    async create(formData: FormData): Promise<ApiResponse<AktaKelahiran>> {
+        const response = await api.post('/akta-kelahiran', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const response = await api.post('/akta-kelahiran', formData);
         return response.data;
     },
 
@@ -28,16 +22,15 @@ export const aktaKelahiranService = {
         return response.data;
     },
 
-    async update(id: number, data: UpdateDto): Promise<ApiResponse<AktaKelahiran>> {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value instanceof File) {
-                formData.append(key, value);
-            } else if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
+    async update(id: number, formData: FormData): Promise<ApiResponse<AktaKelahiran>> {
+        const response = await api.patch(`/akta-kelahiran/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const response = await api.patch(`/akta-kelahiran/${id}`, formData);
+        return response.data;
+    },
+
+    async removeFile(id: number): Promise<ApiResponse>{
+        const response = await api.delete(`/akta-kelahiran/file/${id}`);
         return response.data;
     },
 

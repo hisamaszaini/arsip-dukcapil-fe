@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import {
   createSchema,
   updateSchema,
@@ -12,6 +11,17 @@ import {
 import TextInput from "../ui/TextInput";
 import { Button } from "../ui/Button";
 import MultiImageUpload from "../ui/MultiImageUpload";
+import aktaKelahiranService from "../../services/aktaKelahiranService";
+import { toast } from "sonner";
+import { ConfirmationModal } from "../ui/ConfirmationModal";
+import { handleApiError } from "../../lib/handleApiError";
+
+interface AktaKelahiranFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (formData: FormData, id: number | null) => Promise<void>;
+  editingData: AktaKelahiran | null;
+}
 
 const formatAktaNumber = (value: string) => {
   const prefix = "3520-";
@@ -37,22 +47,6 @@ const formatAktaNumber = (value: string) => {
   return formatted.substring(0, 22);
 };
 
-interface AktaKelahiranFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (formData: CreateDto | UpdateDto, id: number | null) => Promise<void>;
-  editingData: AktaKelahiran | null;
-}
-
-const fileFields = [
-  "fileSuratKelahiran",
-  "fileKk",
-  "fileSuratNikah",
-  "fileSPTJMKelahiran",
-  "fileSPTJMPernikahan",
-  "fileLampiran",
-];
-
 const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
   isOpen,
   onClose,
@@ -60,193 +54,228 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
   editingData,
 }) => {
   const isEditing = !!editingData;
+  const [localData, setLocalData] = useState(editingData);
   const schema = isEditing ? updateSchema : createSchema;
+
+  type FormValues = CreateDto & Partial<UpdateDto>; // Hybrid type
 
   const {
     control,
-    // register,
+    register,
     handleSubmit,
     reset,
-    setError,
-    setValue,
-    formState: { isSubmitting },
-  } = useForm<CreateDto | UpdateDto>({
-    resolver: zodResolver(schema),
-    defaultValues: { noAkta: "3520-" },
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema as any),
   });
 
-  const [files, setFiles] = useState<Record<string, File | null>>(
-    Object.fromEntries(fileFields.map((f) => [f, null]))
-  );
+  // state untuk upload file
+  const [files, setFiles] = useState<Record<string, File | null>>({});
+  const [replacedFiles, setReplacedFiles] = useState<Record<string, number>>({}); // key: slot, value: fileId
+
+  // state untuk delete file
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [fileIdToDelete, setFileIdToDelete] = useState<number | null>(null);
+
+  // Reset form saat modal dibuka
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditing && editingData) {
+        reset({
+          noAkta: editingData.noAkta,
+          noFisik: editingData.noFisik,
+        });
+
+        // Buat mapping file awal
+        const initial: Record<string, File | null> = {};
+        editingData.arsipFiles?.forEach((_file, index) => {
+          initial[`file${index + 1}`] = null;
+        });
+        setFiles(initial);
+      } else {
+        reset();
+        setFiles({});
+      }
+    }
+  }, [isOpen, isEditing, editingData, reset]);
+
+  const handleDeleteRequest = (id: number) => {
+    setFileIdToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Dipanggil oleh ConfirmationModal saat tombol 'Konfirmasi' diklik
+  const handleConfirmDelete = async () => {
+    if (!fileIdToDelete) return;
+
+    try {
+      // Panggil service yang Anda buat
+      await aktaKelahiranService.removeFile(fileIdToDelete);
+      toast.success("File berhasil dihapus.");
+
+      setLocalData(prevData => {
+        if (!prevData) return null; // Safety check
+        return {
+          ...prevData,
+          arsipFiles: prevData.arsipFiles?.filter(
+            file => file.id !== fileIdToDelete
+          )
+        };
+      });
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setFileIdToDelete(null);
+    }
+  };
+
+  useEffect(() => {
+    setLocalData(editingData);
+  }, [editingData, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
-      reset({
-        noAkta: editingData?.noAkta || "3520-",
-        // nama: editingData?.nama || "",
-      });
-
-      const initialFiles: Record<string, File | null> = {};
-      fileFields.forEach((f) => {
-        initialFiles[f] = null;
-        setValue(f as keyof CreateDto, null);
-      });
-      setFiles(initialFiles);
-    }
-  }, [isOpen, editingData, reset, setValue]);
-
-  const onSubmit = async (data: CreateDto | UpdateDto) => {
-    for (const f of fileFields.slice(0, 5)) {
-      const hasFile = files[f] || (editingData && (editingData as any)[f]);
-      if (!hasFile) {
-        setError(f as keyof CreateDto, {
-          type: "custom",
-          message: `${f} wajib diunggah`,
+      if (isEditing && localData) {
+        reset({
+          noAkta: localData.noAkta,
+          noFisik: localData.noFisik,
         });
-        return;
+      } else {
+        reset();
+        setFiles({});
       }
     }
+  }, [isOpen, isEditing, localData, reset]);
 
-    try {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, String(value));
-        }
-      });
+  // handle submit
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    const formData = new FormData();
 
-      Object.entries(files).forEach(([key, file]) => {
-        if (file) formData.append(key, file);
-      });
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "")
+        formData.append(key, String(value));
+    });
 
-      await onSave(data, isEditing ? editingData?.id ?? null : null);
-      onClose();
-    } catch (err: any) {
-      const apiError = err?.response?.data;
-      if (!apiError) {
-        toast.error("Terjadi kesalahan koneksi server.");
-        return;
-      }
-      if (apiError.errors) {
-        Object.entries(apiError.errors as Record<string, string>).forEach(
-          ([field, message]) => {
-            setError(field as keyof CreateDto, {
-              type: "manual",
-              message,
-            });
-          }
-        );
-      }
-      toast.error(apiError.message || "Terjadi kesalahan tidak diketahui.");
-    }
+    // fileIds
+    const fileIds = Object.values(replacedFiles);
+    fileIds.forEach((id) => formData.append("fileIds", String(id)));
+
+    Object.entries(files).forEach(([_key, file]) => {
+      if (file) formData.append("files", file);
+    });
+
+    await onSave(formData, isEditing ? localData?.id ?? null : null);
   };
+
 
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 overflow-y-auto"
-      onClick={onClose}
-    >
+    <>
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 overflow-y-auto"
+        onClick={onClose}
       >
-        <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            {isEditing ? "Edit Data Akta Kelahiran" : "Tambah Akta Kelahiran"}
-          </h3>
-          <p className="text-sm text-gray-600 mt-4 font-bold">
-            <span className="text-red-500">*</span> Wajib diisi
-          </p>
-        </div>
-
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="p-6 space-y-4 overflow-y-auto flex-1"
+        <div
+          className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
         >
-          <Controller
-            name="noAkta"
-            control={control}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <TextInput
-                id="noAkta"
-                label="No. Akta"
-                placeholder="3520-XY-DDMMYYYY-XXXX"
-                required
-                error={error?.message}
-                value={value}
-                onChange={(e) => onChange(formatAktaNumber(e.target.value))}
-              />
-            )}
-          />
-
-          {/* <TextInput
-            id="nama"
-            label="Nama Lengkap"
-            placeholder="Masukkan Nama Lengkap..."
-            required
-            error={errors.nama?.message}
-            className="uppercase"
-            {...register("nama")}
-          /> */}
-
-          <MultiImageUpload
-            mode={isEditing ? "edit" : "create"}
-            label="Unggah Berkas Pendukung"
-            fileFields={[
-              { key: "fileSuratKelahiran", label: "Surat Kelahiran" },
-              { key: "fileKk", label: "Kartu Keluarga (KK)" },
-              { key: "fileSuratNikah", label: "Surat Nikah" },
-              { key: "fileSPTJMKelahiran", label: "SPTJM Kelahiran" },
-              { key: "fileSPTJMPernikahan", label: "SPTJM Pernikahan" },
-              { key: "fileLampiran", label: "Lampiran (Opsional)" },
-            ]}
-            initialFiles={
-              isEditing && editingData
-                ? {
-                  fileSuratKelahiran: editingData.fileSuratKelahiran || null,
-                  fileKk: editingData.fileKk || null,
-                  fileSuratNikah: editingData.fileSuratNikah || null,
-                  fileSPTJMKelahiran: editingData.fileSPTJMKelahiran || null,
-                  fileSPTJMPernikahan: editingData.fileSPTJMPernikahan || null,
-                  fileLampiran: editingData.fileLampiran || null,
-                }
-                : undefined
-            }
-            onChange={(mapped) => {
-              setFiles(mapped);
-              Object.entries(mapped).forEach(([key, file]) =>
-                setValue(key as keyof CreateDto, file)
-              );
-            }}
-          />
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={isSubmitting}
-              onClick={onClose}
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              icon="fas fa-save"
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? "Menyimpan..."
-                : isEditing
-                  ? "Perbarui"
-                  : "Simpan"}
-            </Button>
+          {/* Header */}
+          <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              {isEditing ? "Edit Data Akta Kelahiran" : "Tambah Akta Kelahiran"}
+            </h3>
+            <p className="text-sm text-gray-600 mt-4 font-bold">
+              <span className="text-red-500">*</span> Wajib diisi
+            </p>
           </div>
-        </form>
+
+          {/* Form scrollable */}
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 overflow-y-auto flex-1">
+            <Controller
+              name="noAkta"
+              control={control}
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TextInput
+                  id="noAkta"
+                  label="No. Akta"
+                  placeholder="3520-XY-DDMMYYYY-XXXX"
+                  required
+                  error={error?.message}
+                  value={value}
+                  onChange={(e) => onChange(formatAktaNumber(e.target.value))}
+                />
+              )}
+            />
+
+            <TextInput
+              id="noFisik"
+              label="Nomor Fisik"
+              placeholder="Masukkan nomor fisik..."
+              error={errors.noFisik?.message}
+              {...register("noFisik")}
+            />
+
+            <MultiImageUpload
+              mode={isEditing ? "edit" : "create"}
+              label="Unggah Berkas Pendukung"
+              fileFields={[
+                { key: "file1", label: "Dokumen 1" },
+                { key: "file2", label: "Dokumen 2" },
+                { key: "file3", label: "Dokumen 3" },
+                { key: "file4", label: "Dokumen 4" },
+                { key: "file5", label: "Dokumen 5" },
+                { key: "file6", label: "Dokumen 6" },
+              ]}
+              initialFiles={
+                isEditing && localData
+                  ? Object.fromEntries(
+                    localData.arsipFiles?.map((file, i) => [
+                      `file${i + 1}`,
+                      { url: file.path, id: file.id },
+                    ]) ?? []
+                  )
+                  : undefined
+              }
+              errors={errors}
+              onChange={(mapped, replaced) => {
+                setFiles(mapped);
+                setReplacedFiles(replaced ?? {});
+              }}
+              onDeleteRequest={handleDeleteRequest}
+            />
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isSubmitting}
+                onClick={onClose}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                icon="fas fa-save"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Menyimpan..." : isEditing ? "Perbarui" : "Simpan"}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Konfirmasi Hapus File"
+        message="Apakah Anda yakin ingin menghapus file ini? Tindakan ini tidak dapat dibatalkan."
+      />
+    </>
   );
 };
 

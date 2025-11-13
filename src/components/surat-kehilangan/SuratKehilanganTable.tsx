@@ -66,11 +66,14 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                         <tr className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                             <th className="px-2 py-5 text-center">No.</th>
                             <SortableHeader columnKey="nik" onSort={onSort} queryParams={queryParams}>NIK</SortableHeader>
-                            <SortableHeader columnKey="nama" onSort={onSort} queryParams={queryParams}>Nama</SortableHeader>
-                            <th className="px-6 py-3 text-center">Surat Kehilangan</th>
-                            <SortableHeader columnKey="createdAt" onSort={onSort} queryParams={queryParams}>
-                                Tanggal Dibuat
+                            <SortableHeader columnKey="noFisik" onSort={onSort} queryParams={queryParams}>No. Fisik</SortableHeader>
+                            <SortableHeader columnKey="tanggal" onSort={onSort} queryParams={queryParams}>
+                                Tgl. Pengajuan
                             </SortableHeader>
+                            <SortableHeader columnKey="tanggal" onSort={onSort} queryParams={queryParams}>
+                                Tgl. Dibuat
+                            </SortableHeader>
+                            <th className="px-6 py-3 text-center">Lampiran</th>
                             <th className="px-6 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -112,12 +115,13 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                             `}
                                             >
                                                 <td className="px-2 py-4 text-medium text-gray-500 text-center">{startIndex + index + 1}</td>
-                                                <td className="px-4 py-4 font-medium text-gray-900">{surat.nik}</td>
-                                                <td className="px-6 py-4 text-medium text-gray-600">{surat.nama}</td>
+                                                <td className="px-6 py-4 font-medium text-gray-900">{surat.nik}</td>
+                                                <td className="px-6 py-4 text-medium text-gray-600">{surat.noFisik}</td>
+                                                <td className="px-4 py-4 text-gray-700">{formatTanggal(surat.tanggal)}</td>
+                                                <td className="px-4 py-4 text-gray-700">{formatTanggal(surat.createdAt)}</td>
                                                 <td className="px-4 py-4 text-center">
                                                     {renderFileCell(surat.file)}
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-700">{formatTanggal(surat.createdAt)}</td>
                                                 <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-center items-center gap-2">
                                                         <button onClick={() => onEdit(surat)} title="Edit Data" className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors cursor-pointer">
@@ -206,7 +210,7 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                                             {startIndex + index + 1}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className="text-sm font-semibold text-gray-800 truncate">{surat.nama}</p>
+                                                            <p className="text-sm font-semibold text-gray-800 truncate">{surat.noFisik}</p>
                                                             <p className="text-xs text-gray-500">{surat.nik}</p>
                                                         </div>
                                                     </div>
@@ -225,6 +229,10 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
 
                                             {/* Card Body */}
                                             <div className="p-4 text-sm space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-gray-500">Tanggal Pengajuan</span>
+                                                    <span className="font-medium text-gray-700">{formatTanggal(surat.tanggal)}</span>
+                                                </div>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-gray-500">Tanggal Dibuat</span>
                                                     <span className="font-medium text-gray-700">{formatTanggal(surat.createdAt)}</span>

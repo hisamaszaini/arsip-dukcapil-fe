@@ -46,6 +46,7 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
             nik: "",
             // nama: ""
             tanggal: "",
+            noFisik: "",
         },
     });
 
@@ -63,6 +64,7 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                     tanggal: editingData.tanggal
                         ? editingData.tanggal.split("T")[0]
                         : "",
+                    noFisik: editingData.noFisik
                 });
                 const initialFiles: Record<string, File | null> = {};
                 fileFields.forEach((f) => {
@@ -83,14 +85,13 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
     }, [isOpen, isEditing, editingData, reset, setValue]);
 
     const onSubmit = async (data: CreateDto | UpdateDto) => {
-        // Pastikan semua file wajib sudah ada
-        for (const f of fileFields.slice(0, 5)) {
-            const hasFile = files[f] || (editingData && (editingData as any)[f]);
-            if (!hasFile) {
-                setError(f as keyof CreateDto, { type: "custom", message: `${f} wajib diunggah` });
-                return;
-            }
-        }
+        // for (const f of fileFields.slice(0, 5)) {
+        //     const hasFile = files[f] || (editingData && (editingData as any)[f]);
+        //     if (!hasFile) {
+        //         setError(f as keyof CreateDto, { type: "custom", message: `${f} wajib diunggah` });
+        //         return;
+        //     }
+        // }
 
         try {
             const formData = new FormData();
@@ -108,7 +109,6 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
             });
 
             await onSave(data, isEditing ? editingData?.id ?? null : null);
-            // toast.success(isEditing ? "Data berhasil diperbarui!" : "Data berhasil ditambahkan!");
             onClose();
         } catch (err: any) {
             const apiError = err?.response?.data;
@@ -163,6 +163,15 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                         required={true}
                         error={errors.nik?.message}
                         {...register("nik")}
+                    />
+
+                    <TextInput
+                        id="noFisik"
+                        label="Nomor Fisik"
+                        placeholder="Masukkan No Fisik..."
+                        required={true}
+                        error={errors.noFisik?.message}
+                        {...register("noFisik")}
                     />
 
                     {/* <TextInput

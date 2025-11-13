@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { PaginationMeta } from '../types/api.types';
-import type { SuratPerubahanKependudukan, CreateDto, FindAllSuratPerubahanKependudukanDto, UpdateDto, SuratPerubahanKependudukanSortableKeys } from '../types/suratPerubahanKependudukan.types';
+import type { SuratPerubahanKependudukan, FindAllSuratPerubahanKependudukanDto, SuratPerubahanKependudukanSortableKeys } from '../types/suratPerubahanKependudukan.types';
 import suratPerubahanKependudukanService from '../services/suratPerubahanKependudukanService';
 
 export const useSuratPerubahanKependudukanData = () => {
@@ -62,15 +62,12 @@ export const useSuratPerubahanKependudukanData = () => {
         return await suratPerubahanKependudukanService.findOne(id);
     }, []);
 
-    const saveSuratPerubahanKependudukan = useCallback(async (formData: CreateDto | UpdateDto, id: number | null) => {
-        const { ...payload } = formData;
-
+    const saveSuratPerubahanKependudukan = useCallback(async (formData: FormData, id: number | null) => {
         if (id) {
-            const updatePayload: UpdateDto = { ...payload };
-            await suratPerubahanKependudukanService.update(id, updatePayload);
+            await suratPerubahanKependudukanService.update(id, formData);
             setQueryParams(prev => ({ ...prev }));
         } else {
-            await suratPerubahanKependudukanService.create(payload as CreateDto);
+            await suratPerubahanKependudukanService.create(formData);
             setQueryParams(prev => ({ ...prev, page: 1 }));
         }
     }, []);

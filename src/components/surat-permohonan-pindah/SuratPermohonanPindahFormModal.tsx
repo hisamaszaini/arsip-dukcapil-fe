@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import {
     createSchema,
     updateSchema,
@@ -12,19 +11,17 @@ import {
 import TextInput from "../ui/TextInput";
 import { Button } from "../ui/Button";
 import MultiImageUpload from "../ui/MultiImageUpload";
+import suratPermohonanPindahService from "../../services/suratPermohonanPindahService";
+import { toast } from "sonner";
+import { ConfirmationModal } from "../ui/ConfirmationModal";
+import { handleApiError } from "../../lib/handleApiError";
 
 interface SuratPermohonanPindahFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (formData: CreateDto | UpdateDto, id: number | null) => Promise<void>;
+    onSave: (formData: FormData, id: number | null) => Promise<void>;
     editingData: SuratPermohonanPindah | null;
 }
-
-const fileFields = [
-    "filePmhnPindah",
-    "fileKk",
-    "fileLampiran"
-];
 
 const SuratPermohonanPindahFormModal: React.FC<SuratPermohonanPindahFormModalProps> = ({
     isOpen,
@@ -33,175 +30,218 @@ const SuratPermohonanPindahFormModal: React.FC<SuratPermohonanPindahFormModalPro
     editingData,
 }) => {
     const isEditing = !!editingData;
+    const [localData, setLocalData] = useState(editingData);
     const schema = isEditing ? updateSchema : createSchema;
+
+    type FormValues = CreateDto & Partial<UpdateDto>; // Hybrid type
 
     const {
         register,
         handleSubmit,
         reset,
-        setError,
-        setValue,
         formState: { errors, isSubmitting },
-    } = useForm<CreateDto | UpdateDto>({
-        resolver: zodResolver(schema),
-        defaultValues: { nik: "", nama: "" },
+    } = useForm<FormValues>({
+        resolver: zodResolver(schema as any),
     });
 
-    const [files, setFiles] = useState<Record<string, File | null>>(
-        Object.fromEntries(fileFields.map((f) => [f, null]))
-    );
+    // state untuk upload file
+    const [files, setFiles] = useState<Record<string, File | null>>({});
+    const [replacedFiles, setReplacedFiles] = useState<Record<string, number>>({}); // key: slot, value: fileId
 
-    // Reset form & files saat modal dibuka/ditutup
+    // state untuk delete file
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [fileIdToDelete, setFileIdToDelete] = useState<number | null>(null);
+
+    // Reset form saat modal dibuka
     useEffect(() => {
         if (isOpen) {
             if (isEditing && editingData) {
-                reset({ nik: editingData.nik, nama: editingData.nama });
-                const initialFiles: Record<string, File | null> = {};
-                fileFields.forEach((f) => {
-                    initialFiles[f] = null; // file baru null
-                    setValue(f as keyof CreateDto, null); // reset RHF
+                reset({
+                    nik: editingData.nik,
+                    noFisik: editingData.noFisik,
                 });
-                setFiles(initialFiles);
+
+                // Buat mapping file awal
+                const initial: Record<string, File | null> = {};
+                editingData.arsipFiles?.forEach((_file, index) => {
+                    initial[`file${index + 1}`] = null;
+                });
+                setFiles(initial);
             } else {
                 reset();
-                const initialFiles: Record<string, File | null> = {};
-                fileFields.forEach((f) => {
-                    initialFiles[f] = null;
-                    setValue(f as keyof CreateDto, null);
-                });
-                setFiles(initialFiles);
+                setFiles({});
             }
         }
-    }, [isOpen, isEditing, editingData, reset, setValue]);
+    }, [isOpen, isEditing, editingData, reset]);
 
-    const onSubmit = async (data: CreateDto | UpdateDto) => {
-        for (const f of fileFields.slice(0, 2)) {
-            const hasFile = files[f] || (editingData && (editingData as any)[f]);
-            if (!hasFile) {
-                setError(f as keyof CreateDto, { type: "custom", message: `${f} wajib diunggah` });
-                return;
-            }
-        }
+    const handleDeleteRequest = (id: number) => {
+        setFileIdToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    // Dipanggil oleh ConfirmationModal saat tombol 'Konfirmasi' diklik
+    const handleConfirmDelete = async () => {
+        if (!fileIdToDelete) return;
 
         try {
-            const formData = new FormData();
+            // Panggil service yang Anda buat
+            await suratPermohonanPindahService.removeFile(fileIdToDelete);
+            toast.success("File berhasil dihapus.");
 
-            // Append text fields
-            Object.entries(data).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    formData.append(key, String(value));
-                }
+            setLocalData(prevData => {
+                if (!prevData) return null; // Safety check
+                return {
+                    ...prevData,
+                    arsipFiles: prevData.arsipFiles?.filter(
+                        file => file.id !== fileIdToDelete
+                    )
+                };
             });
-
-            // Append file fields
-            Object.entries(files).forEach(([key, file]) => {
-                if (file) formData.append(key, file);
-            });
-
-            await onSave(data, isEditing ? editingData?.id ?? null : null);
-            onClose();
-        } catch (err: any) {
-            const apiError = err?.response?.data;
-            if (!apiError) {
-                toast.error("Terjadi kesalahan koneksi server.");
-                return;
-            }
-
-            if (apiError.errors) {
-                Object.entries(apiError.errors as Record<string, string>).forEach(([field, message]) => {
-                    setError(field as keyof CreateDto, { type: "manual", message });
-                });
-            }
-
-            if (apiError.success === false && !apiError.errors) {
-                toast.error(apiError.message || "Terjadi kesalahan tidak terduga.");
-                return;
-            }
-
-            toast.error("Terjadi kesalahan tidak diketahui.");
+        } catch (error) {
+            handleApiError(error);
+        } finally {
+            setIsDeleteModalOpen(false);
+            setFileIdToDelete(null);
         }
     };
 
+    useEffect(() => {
+        setLocalData(editingData);
+    }, [editingData, isOpen]);
 
-    console.log(errors);
+    useEffect(() => {
+        if (isOpen) {
+            if (isEditing && localData) {
+                reset({
+                    nik: localData.nik,
+                    noFisik: localData.noFisik,
+                });
+            } else {
+                reset();
+                setFiles({});
+            }
+        }
+    }, [isOpen, isEditing, localData, reset]);
+
+    // handle submit
+    const onSubmit: SubmitHandler<FormValues> = async (data) => {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "")
+                formData.append(key, String(value));
+        });
+
+        // fileIds
+        const fileIds = Object.values(replacedFiles);
+        fileIds.forEach((id) => formData.append("fileIds", String(id)));
+
+        Object.entries(files).forEach(([_key, file]) => {
+            if (file) formData.append("files", file);
+        });
+
+        await onSave(formData, isEditing ? localData?.id ?? null : null);
+    };
 
     if (!isOpen) return null;
 
     return (
-        <div
-            className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 overflow-y-auto"
-            onClick={onClose}
-        >
+        <>
             <div
-                className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4 overflow-y-auto"
+                onClick={onClose}
             >
-                {/* Header */}
-                <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                        {isEditing ? "Edit Data Surat Permohonan Pindah" : "Tambah Surat Permohonan Pindah"}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-4 font-bold"><span className="text-red-500">*</span> Wajib diisi</p>
-                </div>
-
-                {/* Form scrollable */}
-                <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 overflow-y-auto flex-1">
-                    <TextInput
-                        id="nik"
-                        label="NIK"
-                        placeholder="Masukkan 16 digit NIK..."
-                        required={true}
-                        error={errors.nik?.message}
-                        {...register("nik")}
-                    />
-
-                    <TextInput
-                        id="nama"
-                        label="Nama Lengkap"
-                        placeholder="Masukkan Nama Lengkap..."
-                        required={true}
-                        error={errors.nama?.message}
-                        className="uppercase"
-                        {...register("nama")}
-                    />
-
-                    <MultiImageUpload
-                        mode={isEditing ? "edit" : "create"}
-                        label="Unggah Berkas Pendukung"
-                        fileFields={[
-                            { key: "filePmhnPindah", label: "Surat Permohonan Pindah" },
-                            { key: "fileKk", label: "Kartu Keluarga (KK)" },
-                            { key: "fileLampiran", label: "Lampiran (Opsional)" },
-                        ]}
-                        initialFiles={
-                            isEditing && editingData
-                                ? {
-                                    filePmhnPindah: editingData.filePmhnPindah || null,
-                                    fileKk: editingData.fileKk || null,
-                                    fileLampiran: editingData.fileLampiran || null,
-                                }
-                                : undefined
-                        }
-                        onChange={(mapped) => {
-                            setFiles(mapped);
-                            Object.entries(mapped).forEach(([key, file]) =>
-                                setValue(key as keyof CreateDto, file)
-                            );
-                        }}
-                    />
-
-                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                        <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
-                            Batal
-                        </Button>
-                        <Button type="submit" variant="primary" icon="fas fa-save"
-                            disabled={isSubmitting}>
-                            {isSubmitting ? "Menyimpan..." : isEditing ? "Perbarui" : "Simpan"}
-                        </Button>
+                <div
+                    className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Header */}
+                    <div className="py-5 px-6 border-b border-gray-200 flex-shrink-0">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                            {isEditing ? "Edit Data Surat Permohonan Pindah" : "Tambah Surat Permohonan Pindah"}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-4 font-bold">
+                            <span className="text-red-500">*</span> Wajib diisi
+                        </p>
                     </div>
-                </form>
+
+                    {/* Form scrollable */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 overflow-y-auto flex-1">
+                        <TextInput
+                            id="nik"
+                            label="Nomor Induk Penduduk"
+                            placeholder="Masukkan NIK..."
+                            error={errors.nik?.message}
+                            {...register("nik")}
+                        />
+
+                        <TextInput
+                            id="noFisik"
+                            label="Nomor Fisik"
+                            placeholder="Masukkan nomor fisik..."
+                            error={errors.noFisik?.message}
+                            {...register("noFisik")}
+                        />
+
+                        <MultiImageUpload
+                            mode={isEditing ? "edit" : "create"}
+                            label="Unggah Berkas Pendukung"
+                            fileFields={[
+                                { key: "file1", label: "Dokumen 1" },
+                                { key: "file2", label: "Dokumen 2" },
+                                { key: "file3", label: "Dokumen 3" },
+                                { key: "file4", label: "Dokumen 4" },
+                                { key: "file5", label: "Dokumen 5" },
+                                { key: "file6", label: "Dokumen 6" },
+                            ]}
+                            initialFiles={
+                                isEditing && localData
+                                    ? Object.fromEntries(
+                                        localData.arsipFiles?.map((file, i) => [
+                                            `file${i + 1}`,
+                                            { url: file.path, id: file.id },
+                                        ]) ?? []
+                                    )
+                                    : undefined
+                            }
+                            errors={errors}
+                            onChange={(mapped, replaced) => {
+                                setFiles(mapped);
+                                setReplacedFiles(replaced ?? {});
+                            }}
+                            onDeleteRequest={handleDeleteRequest}
+                        />
+
+                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                disabled={isSubmitting}
+                                onClick={onClose}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                icon="fas fa-save"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? "Menyimpan..." : isEditing ? "Perbarui" : "Simpan"}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Konfirmasi Hapus File"
+                message="Apakah Anda yakin ingin menghapus file ini? Tindakan ini tidak dapat dibatalkan."
+            />
+        </>
     );
 };
 

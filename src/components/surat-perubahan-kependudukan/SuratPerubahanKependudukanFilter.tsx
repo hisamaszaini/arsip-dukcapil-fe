@@ -12,7 +12,7 @@ const SuratPerubahanKependudukanFilter: React.FC<UserFilterProps> = ({ searchTer
             {/* Input Pencarian */}
             <div>
                 <label htmlFor="search-user" className="block text-sm font-medium text-gray-600 mb-1">
-                    Cari Nama / NIK
+                    Cari menggunakan NIK
                 </label>
                 <input
                     id="search-user"

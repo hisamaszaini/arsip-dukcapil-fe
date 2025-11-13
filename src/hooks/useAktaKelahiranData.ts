@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { PaginationMeta } from '../types/api.types';
-import type { AktaKelahiran, CreateDto, FindAllAktaDto, UpdateDto, AktaKelahiranSortableKeys } from '../types/aktaKelahiran.types';
+import type { AktaKelahiran, FindAllAktaDto, AktaKelahiranSortableKeys } from '../types/aktaKelahiran.types';
 import aktaKelahiranService from '../services/aktaKelahiranService';
 
 export const useAktaKelahiranData = () => {
@@ -23,7 +23,7 @@ export const useAktaKelahiranData = () => {
             setAktaKelahiranList(response.data);
             setPaginationMeta(response.meta || null);
         } catch (error) {
-            console.error("Gagal memuat data pengguna:", error);
+            console.error("Gagal memuat data akta kelahiran:", error);
         } finally {
             setIsLoading(false);
         }
@@ -62,18 +62,16 @@ export const useAktaKelahiranData = () => {
         return await aktaKelahiranService.findOne(id);
     }, []);
 
-    const saveAktaKelahiran = useCallback(async (formData: CreateDto | UpdateDto, id: number | null) => {
-        const { ...payload } = formData;
-
+    const saveAktaKelahiran = useCallback(async (formData: FormData, id: number | null) => {
         if (id) {
-            const updatePayload: UpdateDto = { ...payload };
-            await aktaKelahiranService.update(id, updatePayload);
+            await aktaKelahiranService.update(id, formData);
             setQueryParams(prev => ({ ...prev }));
         } else {
-            await aktaKelahiranService.create(payload as CreateDto);
+            await aktaKelahiranService.create(formData);
             setQueryParams(prev => ({ ...prev, page: 1 }));
         }
     }, []);
+
 
     const deleteAktaKelahiran = useCallback(async (id: number) => {
         await aktaKelahiranService.remove(id);

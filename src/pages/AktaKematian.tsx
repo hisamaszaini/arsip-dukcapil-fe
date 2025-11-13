@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAktaKematianData } from '../hooks/useAktaKematianData';
-import type { AktaKematian, CreateDto, UpdateDto } from '../types/aktaKematian.types';
+import type { AktaKematian } from '../types/aktaKematian.types';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/Button';
 import AktaKematianFilter from '../components/akta-kematian/AktaKematianFilter';
@@ -8,6 +8,7 @@ import AktaKematianTable from '../components/akta-kematian/AktaKematianTable';
 import Pagination from '../components/ui/Pagination';
 import AktaKematianFormModal from '../components/akta-kematian/AktaKematianFormModal';
 import { ConfirmationModal } from '../components/ui/ConfirmationModal';
+import { handleApiError } from '../lib/handleApiError';
 
 const AktaKematianPage: React.FC = () => {
     const {
@@ -42,17 +43,16 @@ const AktaKematianPage: React.FC = () => {
         setEditingAktaKematian(null);
     };
 
-    const handleSave = async (formData: CreateDto | UpdateDto, id: number | null) => {
+    const handleSave = async (formData: FormData, id: number | null) => {
         try {
             await saveAktaKematian(formData, id);
-            toast.success(`Berhasil ${editingAktaKematian ? 'memperbarui' : 'menambahkan'} akta kematian`)
+            toast.success(`Berhasil ${editingAktaKematian ? 'memperbarui' : 'menambahkan'} akta kematian`);
             handleCloseModal();
         } catch (error) {
-            console.error("Gagal menyimpan data AktaKematian:", error);
-            toast.error(`Gagal ${editingAktaKematian ? 'memperbarui' : 'menambahkan'} akta kematian`)
-            throw error;
+            handleApiError(error);
         }
     };
+
 
     const handleOpenDeleteModal = (userId: number) => {
         setSelectedAktaKematianId(userId);
@@ -70,7 +70,7 @@ const AktaKematianPage: React.FC = () => {
             await deleteAktaKematian(selectedAktaKematianId);
             toast.success("Akta Kematian berhasil dihapus");
         } catch (error) {
-            toast.error("Gagal menghapus pengguna");
+            toast.error("Akta Kematian gagal dihapus");
         } finally {
             handleCloseDeleteModal();
         }

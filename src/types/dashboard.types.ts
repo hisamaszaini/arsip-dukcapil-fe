@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const recentActivitySchema = z.object({
     id: z.number(),
-    nama: z.string(),
+    nama: z.string().nullable().optional(),
     createdAt: z.string(),
     jenisLayanan: z.string(),
 });
@@ -12,6 +12,8 @@ const monthlyStatSchema = z.object({
     aktaKelahiran: z.number(),
     aktaKematian: z.number(),
     suratKehilangan: z.number(),
+    suratPermohonanPindah: z.number(),
+    suratPerubahanKependudukan: z.number(),
 });
 
 export const dashboardDataSchema = z.object({
@@ -20,6 +22,8 @@ export const dashboardDataSchema = z.object({
         totalAktaKelahiran: z.number(),
         totalAktaKematian: z.number(),
         totalSuratKehilangan: z.number(),
+        totalSuratPermohonanPindah: z.number(),
+        totalSuratPerubahanKependudukan: z.number(),
     }),
     recentActivities: z.array(recentActivitySchema),
     monthlyStats: z.array(monthlyStatSchema),

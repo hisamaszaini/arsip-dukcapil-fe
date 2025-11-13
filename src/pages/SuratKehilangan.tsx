@@ -28,7 +28,7 @@ const SuratKehilanganPage: React.FC = () => {
                 const response = await findOneSuratKehilangan(userToEdit.id);
                 setEditingSuratKehilangan(response.data);
             } catch (error) {
-                console.error("Gagal mengambil detail SuratKehilangan:", error);
+                console.error("Gagal mengambil detail Surat Kehilangan:", error);
                 return;
             }
         } else {
@@ -116,7 +116,7 @@ const SuratKehilanganPage: React.FC = () => {
                 onClose={handleCloseDeleteModal}
                 onConfirm={handleConfirmDelete}
                 title="Hapus Surat Kehilangan"
-                message="Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan."
+                message="Apakah Anda yakin ingin menghapus surat ini? Tindakan ini tidak dapat dibatalkan."
                 confirmButtonText="Ya, Hapus"
                 variant="danger"
             />

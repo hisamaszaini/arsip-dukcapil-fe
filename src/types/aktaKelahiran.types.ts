@@ -1,5 +1,4 @@
 import z from "zod";
-import { createFileSchema } from "./file.types";
 
 const noAktaSchema = z
   .string()
@@ -13,23 +12,29 @@ const noAktaSchema = z
 export const createSchema = z.object({
   noAkta: noAktaSchema,
   // nama: z.string().nonempty('Nama wajib diisi').trim(),
-  fileSuratKelahiran: createFileSchema("File Surat Kelahiran", true),
-  fileKk: createFileSchema("File KK", false),
-  fileSuratNikah: createFileSchema("File Surat Nikah", false),
-  fileSPTJMKelahiran: createFileSchema("File SPTJM Kelahiran", false),
-  fileSPTJMPernikahan: createFileSchema("File SPTJM Pernikahan", false),
-  fileLampiran: createFileSchema("File Lampiran", false),
+  noFisik: z
+    .string()
+    .trim()
+    .nonempty("Nomor Fisik wajib diisi")
+    .transform((val) => val.toUpperCase()),
 });
 
 export const updateSchema = z.object({
   noAkta: noAktaSchema,
   // nama: z.string().nonempty("Nama wajib diisi").trim(),
-  fileSuratKelahiran: createFileSchema("File Surat Kelahiran", false),
-  fileKk: createFileSchema("File KK", false),
-  fileSuratNikah: createFileSchema("File Surat Nikah", false),
-  fileSPTJMKelahiran: createFileSchema("File SPTJM Kelahiran", false),
-  fileSPTJMPernikahan: createFileSchema("File SPTJM Pernikahan", false),
-  fileLampiran: createFileSchema("File Lampiran", false),
+  noFisik: z
+    .string()
+    .trim()
+    .optional()
+    .transform((val) => (val ? val.toUpperCase() : undefined)),
+  fileIds: z
+    .union([
+      z.array(z.union([z.string(), z.number()])),
+      z.string().transform((val) => [val]),
+      z.number().transform((val) => [val]),
+    ])
+    .optional()
+    .transform((val) => (val ? val.map((v) => Number(v)) : undefined)),
 });
 
 export const findAllAktaSchema = z.object({
@@ -38,8 +43,9 @@ export const findAllAktaSchema = z.object({
   search: z.string().optional(),
   sortBy: z.enum([
     'id',
-    'nik',
+    'noAkta',
     // 'nama',
+    'noFisik',
     'createdAt',
   ]).optional().default('id'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
@@ -48,15 +54,18 @@ export const findAllAktaSchema = z.object({
 export const aktaKelahiranSchema = z.object({
   id: z.number(),
   noAkta: z.string(),
-  // nama: z.string(),
-  fileSuratKelahiran: z.string(),
-  fileKk: z.string(),
-  fileSuratNikah: z.string(),
-  fileSPTJMKelahiran: z.string(),
-  fileSPTJMPernikahan: z.string(),
-  fileLampiran: z.string(),
+  noFisik: z.string(),
   createdAt: z.string(),
-  updatedAt: z.string()
+  updatedAt: z.string(),
+  arsipFiles: z
+    .array(
+      z.object({
+        id: z.number(),
+        originalName: z.string(),
+        path: z.string(),
+      })
+    )
+    .optional(),
 });
 
 export type CreateDto = z.infer<typeof createSchema>;

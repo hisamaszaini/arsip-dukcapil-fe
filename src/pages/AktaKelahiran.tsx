@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAktaKelahiranData } from '../hooks/useAktaKelahiranData';
-import type { AktaKelahiran, CreateDto, UpdateDto } from '../types/aktaKelahiran.types';
+import type { AktaKelahiran } from '../types/aktaKelahiran.types';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/Button';
 import AktaKelahiranFilter from '../components/akta-kelahiran/AktaKelahiranFilter';
@@ -8,6 +8,7 @@ import AktaKelahiranTable from '../components/akta-kelahiran/AktaKelahiranTable'
 import Pagination from '../components/ui/Pagination';
 import AktaKelahiranFormModal from '../components/akta-kelahiran/AktaKelahiranFormModal';
 import { ConfirmationModal } from '../components/ui/ConfirmationModal';
+import { handleApiError } from '../lib/handleApiError';
 
 const AktaKelahiranPage: React.FC = () => {
     const {
@@ -42,15 +43,13 @@ const AktaKelahiranPage: React.FC = () => {
         setEditingAktaKelahiran(null);
     };
 
-    const handleSave = async (formData: CreateDto | UpdateDto, id: number | null) => {
+    const handleSave = async (formData: FormData, id: number | null) => {
         try {
             await saveAktaKelahiran(formData, id);
             toast.success(`Berhasil ${editingAktaKelahiran ? 'memperbarui' : 'menambahkan'} akta kelahiran`)
             handleCloseModal();
         } catch (error) {
-            console.error("Gagal menyimpan data AktaKelahiran:", error);
-            toast.error(`Gagal ${editingAktaKelahiran ? 'memperbarui' : 'menambahkan'} akta kelahiran`)
-            throw error;
+            handleApiError(error);
         }
     };
 
@@ -70,7 +69,7 @@ const AktaKelahiranPage: React.FC = () => {
             await deleteAktaKelahiran(selectedAktaKelahiranId);
             toast.success("Akta Kelahiran berhasil dihapus");
         } catch (error) {
-            toast.error("Gagal menghapus pengguna");
+            toast.error("Gagal menghapus akta kelahiran");
         } finally {
             handleCloseDeleteModal();
         }

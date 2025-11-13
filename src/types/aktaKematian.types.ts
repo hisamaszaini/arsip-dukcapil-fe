@@ -1,81 +1,62 @@
 import z from "zod";
-import { createFileSchema } from "./file.types";
 
 export const createSchema = z.object({
-  // nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
-  // noAkta: z.string().trim().optional(),
-  nik: z.string().trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka').optional().or(z.literal('')),
-  noAkta: z.string().trim().optional().or(z.literal('')),
-  // nama: z.string().nonempty('Nama wajib diisi').trim(),
-  fileSuratKematian: createFileSchema("File Surat Kematian", true),
-  fileKk: createFileSchema("File KK", false),
-  fileLampiran: createFileSchema("File Lampiran", false),
-  fileRegister: createFileSchema("File Register", false),
-  fileLaporan: createFileSchema("File Laporan", false),
-  fileSPTJM: createFileSchema("File SPTJM Kebenaran Identitas Jenazah", false),
-}).superRefine((data, ctx) => {
-  if (!data.nik && !data.noAkta) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Minimal salah satu dari NIK atau No. Akta wajib diisi",
-      path: ["nik"],
-    });
-  }
-});;
+  noAkta: z.string().trim().nonempty("Nomor Akta Kematian wajib diisi"),
+  noFisik: z
+    .string()
+    .trim()
+    .nonempty("Nomor Fisik wajib diisi")
+    .transform((val) => val.toUpperCase()),
+});
 
 export const updateSchema = z.object({
-  // nik: z.string().nonempty("NIK wajib diisi").trim().regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
-  // noAkta: z.string().trim().optional(),
-  nik: z.string().trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka').optional().or(z.literal('')),
-  noAkta: z.string().trim().optional().or(z.literal('')),
-  nama: z.string().nonempty("Nama wajib diisi").trim(),
-  fileSuratKematian: createFileSchema("File Surat Kematian", false),
-  fileKk: createFileSchema("File KK", false),
-  fileLampiran: createFileSchema("File Lampiran", false),
-  fileRegister: createFileSchema("File Register", false),
-  fileLaporan: createFileSchema("File Laporan", false),
-  fileSPTJM: createFileSchema("File SPTJM Kebenaran Identitas Jenazah", false),
-}).superRefine((data, ctx) => {
-  if (!data.nik && !data.noAkta) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Minimal salah satu dari NIK atau No. Akta wajib diisi",
-      path: ["nik"],
-    });
-  }
-});;
+  noAkta: z.string().trim().optional(),
+  noFisik: z
+    .string()
+    .trim()
+    .optional()
+    .transform((val) => (val ? val.toUpperCase() : undefined)),
+
+  fileIds: z
+    .union([
+      z.array(z.union([z.string(), z.number()])),
+      z.string().transform((val) => [val]),
+      z.number().transform((val) => [val]),
+    ])
+    .optional()
+    .transform((val) => (val ? val.map((v) => Number(v)) : undefined)),
+});
 
 export const findAllAktaSchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
   search: z.string().optional(),
-  sortBy: z.enum([
-    'id',
-    'nik',
-    'noAkta',
-    // 'nama',
-    'createdAt',
-  ]).optional().default('id'),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
+  sortBy: z
+    .enum(["id", "noAkta", "noFisik", "createdAt"])
+    .optional()
+    .default("id"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("asc"),
 });
 
 export const aktaKematianSchema = z.object({
   id: z.number(),
-  nik: z.string(),
-  noAkta: z.string().optional(),
-  // nama: z.string(),
-  fileSuratKematian: z.string(),
-  fileKk: z.string(),
-  fileLampiran: z.string(),
-  fileRegister: z.string(),
-  fileLaporan: z.string(),
-  fileSPTJM: z.string(),
+  noAkta: z.string(),
+  noFisik: z.string(),
   createdAt: z.string(),
-  updatedAt: z.string()
+  updatedAt: z.string(),
+  arsipFiles: z
+    .array(
+      z.object({
+        id: z.number(),
+        originalName: z.string(),
+        path: z.string(),
+      })
+    )
+    .optional(),
 });
 
 export type CreateDto = z.infer<typeof createSchema>;
 export type UpdateDto = z.infer<typeof updateSchema>;
 export type FindAllAktaDto = z.infer<typeof findAllAktaSchema>;
 export type AktaKematian = z.infer<typeof aktaKematianSchema>;
-export type AktaKematianSortableKeys = z.infer<typeof findAllAktaSchema>['sortBy'];
+export type AktaKematianSortableKeys = z.infer<typeof findAllAktaSchema>["sortBy"];

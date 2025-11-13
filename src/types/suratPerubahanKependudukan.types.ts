@@ -1,21 +1,32 @@
 import z from "zod";
-import { createFileSchema } from "./file.types";
 
 export const createSchema = z.object({
     nik: z.string().nonempty('NIK wajib diisi').trim().regex(/^\d{16}$/, 'NIK harus terdiri dari 16 digit angka'),
     // nama: z.string().nonempty('Nama wajib diisi').trim(),
-    filePerubahan: createFileSchema("File Perubahan Kependudukan", true),
-    fileKk: createFileSchema("File KK", true),
-    fileLampiran: createFileSchema("File Lampiran", false),
+    noFisik: z
+        .string()
+        .trim()
+        .nonempty("Nomor Fisik wajib diisi")
+        .transform((val) => val.toUpperCase()),
 });
 
 export const updateSchema = z.object({
-    nik: z.string().nonempty("NIK wajib diisi").trim().regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka"),
+    nik: z.string().nonempty("NIK wajib diisi").trim().regex(/^\d{16}$/, "NIK harus terdiri dari 16 digit angka").optional(),
     // nama: z.string().nonempty("Nama wajib diisi").trim(),
+    noFisik: z
+        .string()
+        .trim()
+        .optional()
+        .transform((val) => (val ? val.toUpperCase() : undefined)),
 
-    filePerubahan: createFileSchema("File Perubahan Kependudukan", false),
-    fileKk: createFileSchema("File KK", false),
-    fileLampiran: createFileSchema("File Lampiran", false),
+    fileIds: z
+        .union([
+            z.array(z.union([z.string(), z.number()])),
+            z.string().transform((val) => [val]),
+            z.number().transform((val) => [val]),
+        ])
+        .optional()
+        .transform((val) => (val ? val.map((v) => Number(v)) : undefined)),
 });
 
 export const findAllSuratPerubahanKependudukanSchema = z.object({
@@ -26,6 +37,7 @@ export const findAllSuratPerubahanKependudukanSchema = z.object({
         'id',
         'nik',
         // 'nama',
+        'noFisik',
         'createdAt',
     ]).optional().default('id'),
     sortOrder: z.enum(['asc', 'desc']).optional().default('asc'),
@@ -35,11 +47,18 @@ export const SuratPerubahanKependudukanSchema = z.object({
     id: z.number(),
     nik: z.string(),
     // nama: z.string(),
-    filePerubahan: z.string(),
-    fileKk: z.string(),
-    fileLampiran: z.string(),
+    noFisik: z.string(),
     createdAt: z.string(),
-    updatedAt: z.string()
+    updatedAt: z.string(),
+    arsipFiles: z
+        .array(
+            z.object({
+                id: z.number(),
+                originalName: z.string(),
+                path: z.string(),
+            })
+        )
+        .optional(),
 });
 
 export type CreateDto = z.infer<typeof createSchema>;

@@ -1,18 +1,12 @@
-import { findAllSuratPerubahanKependudukanSchema, type CreateDto, type FindAllSuratPerubahanKependudukanDto, type SuratPerubahanKependudukan, type UpdateDto } from "../types/suratPerubahanKependudukan.types";
+import { findAllSuratPerubahanKependudukanSchema, type SuratPerubahanKependudukan, type FindAllSuratPerubahanKependudukanDto } from "../types/suratPerubahanKependudukan.types";
 import type { ApiResponse } from "../types/api.types";
 import api from "./api";
 
 export const suratPerubahanKependudukanService = {
-    async create(data: CreateDto): Promise<ApiResponse<SuratPerubahanKependudukan>> {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value instanceof File) {
-                formData.append(key, value);
-            } else if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
+    async create(formData: FormData): Promise<ApiResponse<SuratPerubahanKependudukan>> {
+        const response = await api.post('/surat-perubahan-kependudukan', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const response = await api.post('/surat-perubahan-kependudukan', formData);
         return response.data;
     },
 
@@ -28,16 +22,15 @@ export const suratPerubahanKependudukanService = {
         return response.data;
     },
 
-    async update(id: number, data: UpdateDto): Promise<ApiResponse<SuratPerubahanKependudukan>> {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value instanceof File) {
-                formData.append(key, value);
-            } else if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
+    async update(id: number, formData: FormData): Promise<ApiResponse<SuratPerubahanKependudukan>> {
+        const response = await api.patch(`/surat-perubahan-kependudukan/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const response = await api.patch(`/surat-perubahan-kependudukan/${id}`, formData);
+        return response.data;
+    },
+
+    async removeFile(id: number): Promise<ApiResponse>{
+        const response = await api.delete(`/surat-perubahan-kependudukan/file/${id}`);
         return response.data;
     },
 
