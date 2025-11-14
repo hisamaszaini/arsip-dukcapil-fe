@@ -24,7 +24,7 @@ interface AktaKelahiranFormModalProps {
 }
 
 const formatAktaNumber = (value: string) => {
-  const prefix = "3520-";
+  const prefix = "3502-";
   if (!value) return prefix;
 
   if (!value.startsWith(prefix)) {
@@ -200,7 +200,7 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
                 <TextInput
                   id="noAkta"
                   label="No. Akta"
-                  placeholder="3520-XY-DDMMYYYY-XXXX"
+                  placeholder="3502-XY-DDMMYYYY-XXXX"
                   required
                   error={error?.message}
                   value={value}

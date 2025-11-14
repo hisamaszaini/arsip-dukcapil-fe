@@ -5,8 +5,8 @@ const noAktaSchema = z
   .nonempty("No. Akta wajib diisi")
   .trim()
   .regex(
-    /^3520-[A-Z]{2}-\d{8}-\d{4}$/,
-    "Format No. Akta tidak valid (Contoh: 3520-XX-31072002-0001)"
+    /^\d{4}-[A-Z]{2}-\d{8}-\d{4}$/,
+    "Format No. Akta tidak valid (Contoh: 3502-XX-31072002-0001)"
   );
 
 export const createSchema = z.object({
