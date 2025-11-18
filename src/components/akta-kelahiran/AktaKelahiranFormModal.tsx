@@ -227,6 +227,10 @@ const AktaKelahiranFormModal: React.FC<AktaKelahiranFormModalProps> = ({
                 { key: "file4", label: "Dokumen 4" },
                 { key: "file5", label: "Dokumen 5" },
                 { key: "file6", label: "Dokumen 6" },
+                { key: "file7", label: "Dokumen 7" },
+                { key: "file8", label: "Dokumen 8" },
+                { key: "file9", label: "Dokumen 9" },
+                { key: "file10", label: "Dokumen 10" },
               ]}
               initialFiles={
                 isEditing && localData

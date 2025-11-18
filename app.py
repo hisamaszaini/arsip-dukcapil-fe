@@ -22,7 +22,7 @@ CATEGORY_CONFIG = {
                 "name": "noAkta",
                 "label": "No. Akta",
                 "type": "akta_format",
-                "placeholder": "3520-LL-XXXXXXXX-XXXX"
+                "placeholder": "3502-LL-XXXXXXXX-XXXX"
             },
             {
                 "name": "noFisik",
@@ -131,11 +131,11 @@ class AktaFormattedEntry(ctk.CTkEntry):
             self._last_value = value
             return
         
-        # Format: 3520-LL-XXXXXXXX-XXXX
+        # Format: 3502-LL-XXXXXXXX-XXXX
         formatted = ""
         
         if len(clean) > 0:
-            # Part 1: 3520
+            # Part 1: 3502
             formatted = clean[:4]
             
             if len(clean) > 4:
@@ -525,8 +525,8 @@ class ModernScannerApp(ctk.CTk):
                 return False, f"Bidang '{field['label']}' wajib diisi."
             
             if key == 'noAkta' and category_name == 'Akta Kelahiran':
-                if not re.fullmatch(r"3520-[A-Z]{2}-\d{8}-\d{4}", value.upper()):
-                    return False, "Format No. Akta tidak valid (Contoh: 3520-LU-31072002-0001)"
+                if not re.fullmatch(r"\d{4}-[A-Z]{2}-\d{8}-\d{4}", value.upper()):
+                    return False, "Format No. Akta tidak valid (Contoh: 3502-LU-31072002-0001)"
                 payload[key] = value.upper()
             
             elif key == 'nik':
