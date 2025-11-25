@@ -84,11 +84,11 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                 ? renderState('Tidak ada data surat kehilangan.', 6)
                                 : userList.map((surat, index) => {
                                     const labelMap: Record<string, string> = {
-                                        file: "Surat Kehilangan",
+                                        files: "Surat Kehilangan",
                                     };
 
                                     const otherFileEntries = Object.keys(surat)
-                                        .filter(key => key !== 'file' && key.startsWith('file'))
+                                        .filter(key => key !== 'files' && key.startsWith('files'))
                                         .map(key => {
                                             const url = surat[key as keyof SuratKehilangan];
                                             if (typeof url === 'string' && url) {
@@ -120,7 +120,7 @@ const SuratKehilanganTable: React.FC<SuratKehilanganTableProps> = ({
                                                 <td className="px-4 py-4 text-gray-700">{formatTanggal(surat.tanggal)}</td>
                                                 <td className="px-4 py-4 text-gray-700">{formatTanggal(surat.createdAt)}</td>
                                                 <td className="px-4 py-4 text-center">
-                                                    {renderFileCell(surat.file)}
+                                                    {renderFileCell(surat.files)}
                                                 </td>
                                                 <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-center items-center gap-2">

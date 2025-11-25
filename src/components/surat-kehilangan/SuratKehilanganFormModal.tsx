@@ -21,7 +21,7 @@ interface SuratKehilanganFormModalProps {
 }
 
 const fileFields = [
-    "file",
+    "files",
 ];
 
 const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
@@ -196,7 +196,7 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                     {/* Upload Files */}
                     {fileFields.map((key) => {
                         const labelMap: Record<string, string> = {
-                            file: "Surat Kehilangan",
+                            files: "Surat Kehilangan",
                         };
                         const label = labelMap[key] || key;
 

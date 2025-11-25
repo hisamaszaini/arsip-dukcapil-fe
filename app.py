@@ -631,16 +631,25 @@ class ModernScannerApp(ctk.CTk):
         
         self.send_button.configure(text="⏳ Mengirim...", state="disabled")
         threading.Thread(target=self._send_request_thread, 
-                        args=(full_endpoint, payload_data, files, self.file_list.copy()),
+                        args=(full_endpoint, payload_data, files, self.file_list.copy(), CATEGORY_CONFIG[category_name]["endpoint_slug"]),
                         daemon=True).start()
 
-    def _send_request_thread(self, url, payload, files, file_names):
+    def _send_request_thread(self, url, payload, files, file_names, category_slug):
         def close_files():
             for _, ft in files:
                 ft[1].close()
         
         try:
             cookies = {'accessToken': self.access_token}
+            
+            if(category_slug == 'surat-kehilangan'):
+                single_file = files[0][1]
+                filename, fileobj, mimetype = single_file
+                
+                files = {
+                    "file": (filename, fileobj, mimetype)
+                }
+            
             response = requests.post(url, data=payload, files=files, cookies=cookies)
             
             if response.status_code in [200, 201]:

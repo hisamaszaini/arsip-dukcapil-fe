@@ -10,7 +10,7 @@ export const createSchema = z.object({
         .trim()
         .nonempty("Nomor Fisik wajib diisi")
         .transform((val) => val.toUpperCase()),
-    file: createFileSchema("File Surat Kehilangan", true),
+    files: createFileSchema("File Surat Kehilangan", true),
 });
 
 export const updateSchema = z.object({
@@ -26,7 +26,7 @@ export const updateSchema = z.object({
         .trim()
         .nonempty("Nomor Fisik wajib diisi")
         .transform((val) => val.toUpperCase()),
-    file: createFileSchema("File Surat Kehilangan", false),
+    files: createFileSchema("File Surat Kehilangan", false),
 });
 
 export const findAllSuratKehilanganSchema = z.object({
@@ -50,7 +50,7 @@ export const SuratKehilanganSchema = z.object({
     // nama: z.string(),
     noFisik: z.string(),
     tanggal: z.string(),
-    file: z.string(),
+    files: z.string(),
     createdAt: z.string(),
     updatedAt: z.string()
 });
