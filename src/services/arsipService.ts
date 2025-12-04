@@ -36,6 +36,11 @@ export const arsipService = {
     async remove(id: number): Promise<ApiResponse<Arsip>> {
         const response = await api.delete(`/arsip/${id}`);
         return response.data;
+    },
+
+    async toggleSync(id: number): Promise<ApiResponse<Arsip>> {
+        const response = await api.patch(`/arsip/${id}/sync`);
+        return response.data;
     }
 }
 

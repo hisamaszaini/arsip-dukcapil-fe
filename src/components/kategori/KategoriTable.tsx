@@ -63,7 +63,7 @@ const KategoriTable: React.FC<KategoriTableProps> = ({
                                 ? renderState('Belum ada data kategori.', 8)
                                 : data.map((item, index) => (
                                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-2 py-4 text-medium text-gray-500 text-center">
+                                        <td className="px-2 py-5 text-medium text-gray-500 text-center">
                                             {startIndex + index + 1}
                                         </td>
                                         <td className="px-4 py-4 font-semibold text-gray-900">{item.name}</td>

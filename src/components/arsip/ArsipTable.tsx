@@ -14,6 +14,7 @@ interface ArsipTableProps {
     onEdit: (arsip: Arsip) => void;
     onDelete: (id: number) => void;
     onView: (arsip: Arsip) => void;
+    onSync: (arsip: Arsip) => void;
     kategori: Kategori;
 }
 
@@ -27,6 +28,7 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
     onEdit,
     onDelete,
     onView,
+    onSync,
     kategori
 }) => {
     const { user } = useAuth();
@@ -73,20 +75,7 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
         let span = 4; // No, No Fisik, Lampiran, Aksi
         if (kategori.rulesFormNama) span++;
         if (kategori.rulesFormTanggal) span++;
-        // The first column "No" is actually the index, but we also have the dynamic "No" (e.g. NIK) column
-        // Wait, let's check the columns below.
-        // 1. No (Index)
-        // 2. {kategori.formNo} (Dynamic Label) -> This corresponds to 'no' field
-        // 3. Nama (Optional)
-        // 4. Tanggal (Optional)
-        // 5. No. Fisik
-        // 6. Lampiran
-        // 7. Aksi
-        // So base is 5 (Index, FormNo, NoFisik, Lampiran, Aksi)
-        let total = 5;
-        if (kategori.rulesFormNama) total++;
-        if (kategori.rulesFormTanggal) total++;
-        return total;
+        return span;
     };
 
     return (
@@ -113,6 +102,7 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
                             <SortableHeader columnKey="noFisik" onSort={onSort} queryParams={queryParams}>
                                 No. Fisik
                             </SortableHeader>
+                            <th className="px-6 py-3 text-center">Status</th>
                             <th className="px-6 py-3 text-center">Lampiran</th>
                             <th className="px-6 py-3 text-center">Aksi</th>
                         </tr>
@@ -148,6 +138,14 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
                                                 )}
                                                 <td className="px-4 py-4 text-gray-700">{item.noFisik}</td>
                                                 <td className="px-4 py-4 text-center">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.isSync
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {item.isSync ? 'Sudah Sinkron' : 'Belum Sinkron'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
                                                     {hasFiles ? (
                                                         <span className="text-sm text-gray-600">
                                                             {files.length} file{files.length > 1 ? 's' : ''}
@@ -161,6 +159,18 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <div className="flex justify-center items-center gap-2">
+                                                        {(user?.role === 'ADMIN' || (user?.role === 'OPERATOR' && item.createdById === user.id)) && (
+                                                            <button
+                                                                onClick={() => onSync(item)}
+                                                                title={item.isSync ? "Tandai Belum Sinkron" : "Tandai Sudah Sinkron"}
+                                                                className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer ${item.isSync
+                                                                    ? 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                                                                    : 'bg-teal-100 text-teal-600 hover:bg-teal-200'
+                                                                    }`}
+                                                            >
+                                                                <i className={`fas ${item.isSync ? 'fa-times-circle' : 'fa-check-circle'}`}></i>
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => onView(item)}
                                                             title="Lihat Detail"
@@ -252,63 +262,49 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
                                             key={item.id}
                                             className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-all duration-300"
                                         >
-                                            <div className="bg-gray-50/70 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                                                <div>
-                                                    <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm">
+                                            <div className="bg-gray-50/70 px-4 py-3 border-b border-gray-200 flex justify-between items-start">
+                                                <div className="flex gap-3 items-center">
+                                                    <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold shadow-sm flex-shrink-0">
                                                         {startIndex + index + 1}
                                                     </div>
-                                                    <p className="font-semibold text-gray-800 text-sm mt-1">
-                                                        {item.no}
-                                                    </p>
-                                                    {kategori.rulesFormTanggal && item.tanggal && (
-                                                        <p className="text-xs text-gray-500">
-                                                            {formatTanggal(item.tanggal)}
+                                                    <div>
+                                                        <p className="font-normal text-gray-800 text-base">
+                                                            {item.no}
                                                         </p>
-                                                    )}
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    <button
-                                                        onClick={() => onView(item)}
-                                                        title="Lihat Detail"
-                                                        className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                                                    >
-                                                        <i className="fas fa-eye"></i>
-                                                    </button>
-                                                    {(user?.role === 'ADMIN' || (user?.role === 'OPERATOR' && item.createdById === user.id)) && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => onEdit(item)}
-                                                                title="Edit"
-                                                                className="w-9 h-9 flex items-center justify-center rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors"
-                                                            >
-                                                                <i className="fas fa-edit"></i>
-                                                            </button>
-                                                            <button
-                                                                onClick={() => onDelete(item.id)}
-                                                                title="Hapus"
-                                                                className="w-9 h-9 flex items-center justify-center rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-                                                            >
-                                                                <i className="fas fa-trash"></i>
-                                                            </button>
-                                                        </>
-                                                    )}
+                                                        {kategori.rulesFormTanggal && item.tanggal && (
+                                                            <p className="text-xs text-gray-500 mt-0.5">
+                                                                {formatTanggal(item.tanggal)}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
 
                                             <div className="p-4 space-y-2 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500">{kategori.formNo}:</span>
-                                                    <span className="font-medium text-gray-800">{item.no}</span>
-                                                </div>
-                                                {kategori.rulesFormNama && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-500">Nama:</span>
-                                                        <span className="font-medium text-gray-800">{item.nama || '-'}</span>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <span className="text-xs text-gray-500 block">{kategori.formNo}</span>
+                                                        <span className="font-medium text-gray-800">{item.no}</span>
                                                     </div>
-                                                )}
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500">No Fisik:</span>
-                                                    <span className="font-medium text-gray-800">{item.noFisik}</span>
+                                                    <div>
+                                                        <span className="text-xs text-gray-500 block">No Fisik</span>
+                                                        <span className="font-medium text-gray-800">{item.noFisik}</span>
+                                                    </div>
+                                                    {kategori.rulesFormNama && (
+                                                        <div className="col-span-2">
+                                                            <span className="text-xs text-gray-500 block">Nama</span>
+                                                            <span className="font-medium text-gray-800">{item.nama || '-'}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="col-span-2">
+                                                        <span className="text-xs text-gray-500 block mb-1">Status Sinkronisasi</span>
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.isSync
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                            {item.isSync ? 'Sudah Sinkron' : 'Belum Sinkron'}
+                                                        </span>
+                                                    </div>
                                                 </div>
 
                                                 {files.length > 0 && (
@@ -347,12 +343,51 @@ const ArsipTable: React.FC<ArsipTableProps> = ({
                                                     </div>
                                                 )}
                                             </div>
+
+                                            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex justify-end gap-2">
+                                                {(user?.role === 'ADMIN' || (user?.role === 'OPERATOR' && item.createdById === user.id)) && (
+                                                    <button
+                                                        onClick={() => onSync(item)}
+                                                        title={item.isSync ? "Tandai Belum Sinkron" : "Tandai Sudah Sinkron"}
+                                                        className={`flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${item.isSync
+                                                            ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                                                            : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                                                            }`}
+                                                    >
+                                                        <i className={`fas ${item.isSync ? 'fa-times-circle' : 'fa-check-circle'} mr-2`}></i>
+                                                        {item.isSync ? 'Batal' : 'Sinkron'}
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => onView(item)}
+                                                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors text-sm font-medium"
+                                                >
+                                                    <i className="fas fa-eye mr-2"></i>
+                                                    Detail
+                                                </button>
+                                                {(user?.role === 'ADMIN' || (user?.role === 'OPERATOR' && item.createdById === user.id)) && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => onEdit(item)}
+                                                            className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 transition-colors"
+                                                        >
+                                                            <i className="fas fa-edit"></i>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => onDelete(item.id)}
+                                                            className="flex items-center justify-center w-9 h-9 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                                                        >
+                                                            <i className="fas fa-trash"></i>
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         )}
-            </div>
+            </div >
         </>
     );
 };

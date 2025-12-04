@@ -25,6 +25,8 @@ export const arsipSchema = z.object({
             path: z.string(),
         })
     ),
+    isSync: z.boolean().default(false),
+    syncAt: z.string().nullable().optional(),
 });
 
 export const findAllArsipSchema = z.object({

@@ -91,6 +91,17 @@ export const useArsipData = (kategoriId?: number) => {
         }
     };
 
+    const toggleSync = async (id: number) => {
+        try {
+            await arsipService.toggleSync(id);
+            fetchArsip();
+            return true;
+        } catch (error) {
+            handleApiError(error);
+            throw error;
+        }
+    };
+
     return {
         arsipList,
         isLoading,
@@ -102,6 +113,7 @@ export const useArsipData = (kategoriId?: number) => {
         handlePageChange,
         saveArsip,
         deleteArsip,
+        toggleSync,
         refresh: fetchArsip
     };
 };

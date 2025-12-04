@@ -37,18 +37,27 @@ const ArsipFilter: React.FC<ArsipFilterProps> = ({ searchTerm, kategori }) => {
     }, [localSearchTerm, setSearchParams, searchParams]);
 
     return (
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Cari {kategori.name}</span>
-            </div>
+        <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col gap-2">
+            {/* Label */}
+            <label
+                htmlFor="search"
+                className="text-sm font-medium text-gray-600"
+            >
+                Cari {kategori.name}
+            </label>
+
+            {/* Input */}
             <div className="relative w-full md:w-96">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i className="fas fa-search text-gray-400"></i>
                 </div>
+
                 <input
                     type="text"
+                    id="search"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out"
-                    placeholder={`Cari Arsip, Masukan ${kategori.formNo}${kategori.rulesFormNama === true ? 'atau  Nama' : ''}...`}
+                    placeholder={`Masukkan ${kategori.formNo}${kategori.rulesFormNama === true ? " atau Nama" : ""
+                        }...`}
                     value={localSearchTerm}
                     onChange={(e) => setLocalSearchTerm(e.target.value)}
                 />

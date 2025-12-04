@@ -30,7 +30,8 @@ const ArsipDynamicPage: React.FC = () => {
         handleSort,
         handlePageChange,
         saveArsip,
-        deleteArsip
+        deleteArsip,
+        toggleSync
     } = useArsipData(kategori?.id);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -114,6 +115,31 @@ const ArsipDynamicPage: React.FC = () => {
         }
     };
 
+    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+    const [selectedArsipForSync, setSelectedArsipForSync] = useState<Arsip | null>(null);
+
+    const handleOpenSyncModal = (arsip: Arsip) => {
+        setSelectedArsipForSync(arsip);
+        setIsSyncModalOpen(true);
+    };
+
+    const handleCloseSyncModal = () => {
+        setIsSyncModalOpen(false);
+        setSelectedArsipForSync(null);
+    };
+
+    const handleConfirmSync = async () => {
+        if (!selectedArsipForSync) return;
+        try {
+            await toggleSync(selectedArsipForSync.id);
+            toast.success(selectedArsipForSync.isSync ? "Sinkronisasi dibatalkan" : "Arsip berhasil disinkronisasi");
+        } catch (error) {
+            handleApiError(error);
+        } finally {
+            handleCloseSyncModal();
+        }
+    };
+
     if (isKategoriLoading) {
         return <div className="p-8 text-center text-gray-500">Memuat kategori...</div>;
     }
@@ -149,6 +175,7 @@ const ArsipDynamicPage: React.FC = () => {
                     onEdit={handleOpenModal}
                     onDelete={handleOpenDeleteModal}
                     onView={handleView}
+                    onSync={handleOpenSyncModal}
                     kategori={kategori}
                 />
             </div>
@@ -180,6 +207,18 @@ const ArsipDynamicPage: React.FC = () => {
                 message="Apakah Anda yakin ingin menghapus arsip ini? Tindakan ini tidak dapat dibatalkan."
                 confirmButtonText="Ya, Hapus"
                 variant="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={isSyncModalOpen}
+                onClose={handleCloseSyncModal}
+                onConfirm={handleConfirmSync}
+                title={selectedArsipForSync?.isSync ? "Hapus Tanda Sinkron" : "Tandai Sudah Sinkron"}
+                message={selectedArsipForSync?.isSync
+                    ? "Apakah Anda yakin ingin menghapus tanda sinkron pada arsip ini?"
+                    : "Apakah Anda yakin ingin menandai arsip ini sebagai sudah disinkronisasi?"}
+                confirmButtonText={selectedArsipForSync?.isSync ? "Ya, Hapus Tanda" : "Ya, Tandai"}
+                variant="primary"
             />
         </div>
     );

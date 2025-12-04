@@ -5,6 +5,7 @@ import {
   User,
   User2,
   LogOut,
+  TagIcon,
 } from "lucide-react";
 import type { UserRole } from "../types/user.types";
 
@@ -12,7 +13,7 @@ export const menuConfig: Record<UserRole, NavigationItem[]> = {
   ADMIN: [
     { label: 'Dashboard', path: '/admin/dashboard', icon: Home },
     { label: 'Manajemen User', path: '/admin/user', icon: User2 },
-    { label: 'Manajemen Kategori', path: '/admin/kategori', icon: FileText },
+    { label: 'Manajemen Kategori', path: '/admin/kategori', icon: TagIcon },
     {
       label: 'Layanan Arsip',
       icon: FileText,
