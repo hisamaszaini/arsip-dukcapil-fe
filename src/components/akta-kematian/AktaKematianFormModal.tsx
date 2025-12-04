@@ -39,6 +39,7 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
         register,
         handleSubmit,
         reset,
+        setError,
         formState: { errors, isSubmitting },
     } = useForm<FormValues>({
         resolver: zodResolver(schema as any),
@@ -125,22 +126,46 @@ const AktaKematianFormModal: React.FC<AktaKematianFormModalProps> = ({
 
     // handle submit
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
-        const formData = new FormData();
+        try {
+            const formData = new FormData();
 
-        Object.entries(data).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== "")
-                formData.append(key, String(value));
-        });
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== "")
+                    formData.append(key, String(value));
+            });
 
-        // fileIds
-        const fileIds = Object.values(replacedFiles);
-        fileIds.forEach((id) => formData.append("fileIds", String(id)));
+            // fileIds
+            const fileIds = Object.values(replacedFiles);
+            fileIds.forEach((id) => formData.append("fileIds", String(id)));
 
-        Object.entries(files).forEach(([_key, file]) => {
-            if (file) formData.append("files", file);
-        });
+            Object.entries(files).forEach(([_key, file]) => {
+                if (file) formData.append("files", file);
+            });
 
-        await onSave(formData, isEditing ? localData?.id ?? null : null);
+            await onSave(formData, isEditing ? localData?.id ?? null : null);
+            onClose();
+        } catch (err: any) {
+            const apiError = err?.response?.data;
+            if (!apiError) {
+                toast.error("Terjadi kesalahan koneksi server.");
+                return;
+            }
+
+            if (apiError.errors) {
+                Object.entries(apiError.errors as Record<string, string>).forEach(([field, message]) => {
+                    setError(field as keyof CreateDto, { type: "manual", message });
+                });
+                toast.error(apiError.message || "Validasi gagal, periksa kembali form anda.");
+                return;
+            }
+
+            if (apiError.success === false) {
+                toast.error(apiError.message || "Terjadi kesalahan tidak terduga.");
+                return;
+            }
+
+            toast.error("Terjadi kesalahan tidak diketahui.");
+        }
     };
 
 

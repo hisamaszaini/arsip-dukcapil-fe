@@ -121,9 +121,12 @@ const SuratKehilanganFormModal: React.FC<SuratKehilanganFormModalProps> = ({
                 Object.entries(apiError.errors as Record<string, string>).forEach(([field, message]) => {
                     setError(field as keyof CreateDto, { type: "manual", message });
                 });
+                // Jika ada error field, tampilkan pesan umum saja atau return agar tidak double toast
+                toast.error(apiError.message || "Validasi gagal, periksa kembali form anda.");
+                return;
             }
 
-            if (apiError.success === false && !apiError.errors) {
+            if (apiError.success === false) {
                 toast.error(apiError.message || "Terjadi kesalahan tidak terduga.");
                 return;
             }

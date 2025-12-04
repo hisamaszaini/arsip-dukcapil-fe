@@ -80,9 +80,9 @@ const UserPage: React.FC = () => {
     return (
         <div className="w-full mx-auto bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
             <header className="p-4 md:p-6 border-b border-gray-200 flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-                <h2 className="text-base md:text-xl font-bold text-gray-800">Manajemen Pengguna</h2>
+                <h2 className="text-base md:text-xl font-bold text-gray-800">Manajemen User</h2>
                 <Button variant="primary" size="mid" icon="fas fa-plus" onClick={() => setIsModalOpen(true)}>
-                    Tambah Pengguna
+                    Tambah User
                 </Button>
             </header>
 

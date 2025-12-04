@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import * as LucideIcons from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import type { NavigationItem } from '../../types/navigation.types.ts';
 import { useAuth } from '../../contexts/AuthContext';
 import { menuConfig } from '../../constant/menuConfig.tsx';
+import { kategoriService } from '../../services/kategoriService';
 
 const DROPDOWNS_ALWAYS_OPEN = true;
 
@@ -17,13 +19,58 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogoutClick }) => 
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState<string[]>([]);
   const { user } = useAuth();
+  const [navItems, setNavItems] = useState<NavigationItem[]>([]);
 
   const role = user?.role ?? 'ADMIN';
+
+  // Fetch categories using React Query
+  const { data: categories } = useQuery({
+    queryKey: ['kategori-sidebar'],
+    queryFn: async () => {
+      const response = await kategoriService.findAll({ limit: 100, sortOrder: 'asc', sortBy: 'id' });
+      return response.data || [];
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Update menu when role or categories change
+  useEffect(() => {
+    // Get base menu for role
+    // Use shallow copy to preserve icon components
+    const baseMenu = menuConfig[role] || [];
+
+    if (categories && categories.length > 0) {
+      // Create menu items from categories
+      const categoryItems: NavigationItem[] = categories.map(cat => ({
+        label: cat.name,
+        path: `/${role.toLowerCase()}/arsip/${cat.slug}`,
+        icon: LucideIcons.File
+      }));
+
+      // Find "Layanan Arsip" and append categories
+      const updatedMenu = baseMenu.map((item) => {
+        if (item.label === 'Layanan Arsip') {
+          return {
+            ...item,
+            children: [
+              ...(item.children || []),
+              ...categoryItems
+            ]
+          };
+        }
+        return item;
+      });
+
+      setNavItems(updatedMenu);
+    } else {
+      setNavItems(baseMenu);
+    }
+  }, [role, categories]);
 
   useEffect(() => {
     if (!DROPDOWNS_ALWAYS_OPEN) {
       const newOpenMenus: string[] = [];
-      menuConfig[role]?.forEach(item => {
+      navItems.forEach(item => {
         if (item.children) {
           const match = item.children.find(child => child.path === location.pathname);
           if (match) newOpenMenus.push(item.label);
@@ -31,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogoutClick }) => 
       });
       setOpenMenus(newOpenMenus);
     }
-  }, [location.pathname, role]);
+  }, [location.pathname, navItems]);
 
   const toggleMenu = (label: string) => {
     if (!DROPDOWNS_ALWAYS_OPEN) {
@@ -151,12 +198,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogoutClick }) => 
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4">
+      <nav className="flex-1 overflow-y-auto p-4 sidebar-scroll">
         <ul className="space-y-2">
           <p className="px-4 pt-2 pb-3 text-xs font-semibold uppercase text-white/60">
             Menu Utama
           </p>
-          {menuConfig[role]?.map(renderItem)}
+          {navItems.map(renderItem)}
         </ul>
       </nav>
     </aside>

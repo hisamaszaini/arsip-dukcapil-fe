@@ -7,24 +7,19 @@ const recentActivitySchema = z.object({
     jenisLayanan: z.string(),
 });
 
-const monthlyStatSchema = z.object({
-    month: z.string(),
-    aktaKelahiran: z.number(),
-    aktaKematian: z.number(),
-    suratKehilangan: z.number(),
-    suratPermohonanPindah: z.number(),
-    suratPerubahanKependudukan: z.number(),
+const statItemSchema = z.object({
+    label: z.string(),
+    count: z.number(),
+    icon: z.string(),
+    gradient: z.string().optional(),
 });
 
+const monthlyStatSchema = z.object({
+    month: z.string(),
+}).passthrough(); // Allow dynamic keys
+
 export const dashboardDataSchema = z.object({
-    stats: z.object({
-        totalUser: z.number(),
-        totalAktaKelahiran: z.number(),
-        totalAktaKematian: z.number(),
-        totalSuratKehilangan: z.number(),
-        totalSuratPermohonanPindah: z.number(),
-        totalSuratPerubahanKependudukan: z.number(),
-    }),
+    stats: z.array(statItemSchema),
     recentActivities: z.array(recentActivitySchema),
     monthlyStats: z.array(monthlyStatSchema),
 });

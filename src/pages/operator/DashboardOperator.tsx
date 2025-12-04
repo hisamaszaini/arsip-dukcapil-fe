@@ -2,13 +2,14 @@ import React from "react";
 import { useDashboardData } from "../../hooks/useDashboardData";
 import StatCard from "../../components/ui/StatCard";
 import Spinner from "../../components/ui/Spinner";
-import { 
-    Baby, 
-    Skull, 
-    FileSearch2, 
-    ShieldAlert, 
-    MoveRight, 
-    FileSignature 
+import {
+    Baby,
+    Skull,
+    FileSearch2,
+    ShieldAlert,
+    MoveRight,
+    FileSignature,
+    FileText
 } from "lucide-react";
 import DashboardChart from "../../components/dashboard/DashboardChart";
 import { formatTanggalSingkatTanpaTahun } from "../../utils/date";
@@ -59,41 +60,42 @@ const AdminDashboardPage: React.FC = () => {
             {/*     STAT CARDS          */}
             {/* ======================= */}
             <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <StatCard 
-                    title="Akta Kelahiran" 
-                    value={stats.totalAktaKelahiran} 
-                    icon={Baby} 
-                    gradientClass="gradient-emerald" 
-                    animationDelay="0.1s" 
-                />
-                <StatCard 
-                    title="Akta Kematian" 
-                    value={stats.totalAktaKematian} 
-                    icon={Skull} 
-                    gradientClass="gradient-slate" 
-                    animationDelay="0.2s" 
-                />
-                <StatCard 
-                    title="Surat Kehilangan" 
-                    value={stats.totalSuratKehilangan} 
-                    icon={FileSearch2} 
-                    gradientClass="gradient-amber" 
-                    animationDelay="0.3s" 
-                />
-                <StatCard 
-                    title="Permohonan Pindah" 
-                    value={stats.totalSuratPermohonanPindah} 
-                    icon={MoveRight} 
-                    gradientClass="gradient-blue" 
-                    animationDelay="0.4s" 
-                />
-                <StatCard 
-                    title="Perubahan Kependudukan" 
-                    value={stats.totalSuratPerubahanKependudukan} 
-                    icon={FileSignature} 
-                    gradientClass="gradient-purple" 
-                    animationDelay="0.5s" 
-                />
+                {stats.map((stat: any, index: number) => {
+                    // Map slug to icon and gradient (Legacy Styles)
+                    const getStyleBySlug = (slug?: string) => {
+                        switch (slug) {
+                            case 'akta-kelahiran':
+                                return { icon: Baby, gradient: 'gradient-emerald' };
+                            case 'akta-kematian':
+                                return { icon: Skull, gradient: 'gradient-slate' };
+                            case 'surat-kehilangan':
+                                return { icon: FileSearch2, gradient: 'gradient-amber' };
+                            case 'surat-permohonan-pindah':
+                                return { icon: MoveRight, gradient: 'gradient-blue' };
+                            case 'surat-perubahan-kependudukan':
+                                return { icon: FileSignature, gradient: 'gradient-purple' };
+                            default:
+                                return {
+                                    icon: ({ FileText } as any)[stat.icon] || FileText,
+                                    gradient: stat.gradient || 'gradient-indigo'
+                                };
+                        }
+                    };
+
+                    const style = getStyleBySlug(stat.slug);
+                    const IconComponent = style.icon;
+
+                    return (
+                        <StatCard
+                            key={index}
+                            title={stat.label}
+                            value={stat.count}
+                            icon={IconComponent}
+                            gradientClass={style.gradient}
+                            animationDelay={`${index * 0.1}s`}
+                        />
+                    );
+                })}
             </section>
 
             {/* ======================= */}

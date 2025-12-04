@@ -16,7 +16,7 @@ interface InitialFile {
 interface MultiImageUploadProps<T extends Record<string, any> = any> {
   label?: string;
   fileFields: FileField[];
-  mode?: "create" | "edit";
+  mode?: "create" | "edit" | "view";
   initialFiles?: Record<string, InitialFile | null>;
   onChange?: (
     mappedFiles: Record<string, File | null>,
@@ -24,6 +24,7 @@ interface MultiImageUploadProps<T extends Record<string, any> = any> {
   ) => void;
   errors?: FieldErrors<T>;
   onDeleteRequest?: (id: number) => void;
+  disabled?: boolean;
 }
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
@@ -36,6 +37,7 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
   onChange,
   errors,
   onDeleteRequest,
+  disabled = false,
 }: MultiImageUploadProps<T>) => {
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>(
@@ -45,18 +47,23 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
   const userModifiedKeys = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (mode === "edit" && initialFiles) {
+    if ((mode === "edit" || mode === "view") && initialFiles) {
       const updated: Record<string, string | null> = {};
       fileFields.forEach(({ key }) => {
         // Hanya update jika user belum memodifikasi key ini
         if (!userModifiedKeys.current.has(key)) {
           const fileData = initialFiles[key];
-          updated[key] = fileData ? `${API_URL}/uploads/${fileData.url}` : null;
+          if (fileData) {
+            const savedFileName = fileData.url.split(/[/\\]/).pop();
+            updated[key] = `${API_URL}/arsip/file/${fileData.id}/content/${savedFileName}`;
+          } else {
+            updated[key] = null;
+          }
         }
       });
 
       if (Object.keys(updated).length > 0) {
-        setPreviews(prev => ({ ...prev, ...updated }));
+        setPreviews((prev) => ({ ...prev, ...updated }));
       }
     }
   }, [initialFiles, mode, fileFields]);
@@ -143,7 +150,6 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
     e: React.ChangeEvent<HTMLInputElement>,
     key: string
   ) => {
-
     const file = e.target.files?.[0] || null;
     if (!file) {
       return;
@@ -197,9 +203,12 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
 
     // Kembalikan ke URL original jika ada
     const initialFile = initialFiles[key];
-    const originalUrl = initialFile
-      ? `${API_URL}/uploads/${initialFile.url}`
-      : null;
+    let originalUrl: string | null = null;
+
+    if (initialFile) {
+      const savedFileName = initialFile.url.split(/[/\\]/).pop();
+      originalUrl = `${API_URL}/arsip/file/${initialFile.id}/content/${savedFileName}`;
+    }
 
     // Update semua state
     const newSelected = { ...selectedFiles, [key]: null };
@@ -213,6 +222,22 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
     onChange?.(newSelected, newReplaced);
   };
 
+  // === LOGIC DYNAMIC FIELDS ===
+  // Cari index terakhir yang memiliki file (baik dari preview/upload baru atau initialFiles)
+  const lastFilledIndex = fileFields.reduce((lastIndex, field, index) => {
+    const hasFile = !!previews[field.key] || !!initialFiles[field.key];
+    return hasFile ? index : lastIndex;
+  }, -1);
+
+  // Tampilkan minimal 3 field, atau sampai index terakhir yang terisi + 1 (agar ada 1 field kosong di bawahnya)
+  // Math.min untuk memastikan tidak melebihi total field yang tersedia
+  const visibleCount = Math.min(
+    fileFields.length,
+    Math.max(3, lastFilledIndex + 2)
+  );
+
+  const visibleFields = fileFields.slice(0, visibleCount);
+
   return (
     <div className="w-full mb-4">
       <label className="block text-base font-medium text-gray-700 mb-1">
@@ -224,7 +249,7 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
         <>
           <label
             htmlFor="multiUpload"
-            className="relative flex flex-col items-center justify-center w-full h-44 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+            className={`relative flex flex-col items-center justify-center w-full h-44 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
           >
             <div className="absolute flex flex-col items-center justify-center text-center p-2">
               <i className="fas fa-cloud-upload-alt text-gray-500 text-3xl"></i>
@@ -243,11 +268,12 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
               multiple
               className="hidden"
               onChange={handleMultipleChange}
+              disabled={disabled}
             />
           </label>
 
           <div className="mt-5 space-y-4">
-            {fileFields.map(({ key, label }, index) => {
+            {visibleFields.map(({ key, label }, index) => {
               const errorMessage = (errors as any)?.[key]?.message as
                 | string
                 | undefined;
@@ -267,30 +293,32 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
                           alt={label}
                           className="w-full min-h-44 max-h-[300px] object-contain bg-gray-100 rounded-md cursor-pointer"
                           onClick={() =>
-                            document
+                            !disabled && document
                               .getElementById(`create-upload-${key}`)
                               ?.click()
                           }
                         />
                         {/* === TOMBOL UNSELECT (CREATE) === */}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/75 hover:text-white"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUnselectCreate(key);
-                          }}
-                        >
-                          <X className="w-5 h-5" />
-                        </Button>
+                        {!disabled && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/75 hover:text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnselectCreate(key);
+                            }}
+                          >
+                            <X className="w-5 h-5" />
+                          </Button>
+                        )}
                       </>
                     ) : (
                       <div
-                        className="w-full min-h-44 flex items-center justify-center text-gray-400 text-sm italic bg-gray-100 rounded-md cursor-pointer"
+                        className={`w-full min-h-44 flex items-center justify-center text-gray-400 text-sm italic bg-gray-100 rounded-md ${!disabled ? 'cursor-pointer' : ''}`}
                         onClick={() =>
-                          document
+                          !disabled && document
                             .getElementById(`create-upload-${key}`)
                             ?.click()
                         }
@@ -307,6 +335,7 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
                     accept="image/jpeg"
                     className="hidden"
                     onChange={(e) => handleSingleChangeCreate(e, key)}
+                    disabled={disabled}
                   />
 
                   {errorMessage && (
@@ -322,7 +351,7 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
       {/* === MODE EDIT === */}
       {mode === "edit" && (
         <div className="w-full space-y-4">
-          {fileFields.map(({ key, label }) => {
+          {visibleFields.map(({ key, label }) => {
             const errorMessage = (errors as any)?.[key]?.message as
               | string
               | undefined;
@@ -343,16 +372,16 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
                     <img
                       src={previews[key]!}
                       alt={label}
-                      className="w-full max-h-[300px] object-contain bg-gray-50 rounded-lg cursor-pointer hover:opacity-90"
+                      className={`w-full max-h-[300px] object-contain bg-gray-50 rounded-lg ${!disabled ? 'cursor-pointer hover:opacity-90' : ''}`}
                       onClick={() => {
-                        document.getElementById(`edit-upload-${key}`)?.click();
+                        !disabled && document.getElementById(`edit-upload-${key}`)?.click();
                       }}
                     />
                   ) : (
                     <div
-                      className="w-full min-h-44 flex items-center justify-center bg-gray-50 text-gray-400 italic text-sm cursor-pointer"
+                      className={`w-full min-h-44 flex items-center justify-center bg-gray-50 text-gray-400 italic text-sm ${!disabled ? 'cursor-pointer' : ''}`}
                       onClick={() =>
-                        document.getElementById(`edit-upload-${key}`)?.click()
+                        !disabled && document.getElementById(`edit-upload-${key}`)?.click()
                       }
                     >
                       Belum ada file
@@ -366,10 +395,11 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
                     accept="image/jpeg"
                     className="hidden"
                     onChange={(e) => handleSingleChangeEdit(e, key)}
+                    disabled={disabled}
                   />
 
                   {/* === TOMBOL UNSELECT (EDIT) === */}
-                  {isBlob && (
+                  {!disabled && isBlob && (
                     <Button
                       variant="outline"
                       type="button"
@@ -385,7 +415,7 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
                   )}
 
                   {/* === TOMBOL DELETE BARU === */}
-                  {previews[key] && fileId && !isBlob && (
+                  {!disabled && previews[key] && fileId && !isBlob && (
                     <Button
                       variant="danger"
                       type="button"
@@ -419,6 +449,51 @@ const MultiImageUpload = <T extends Record<string, any> = any>({
                 {errorMessage && (
                   <p className="text-sm text-red-600 mt-1">{errorMessage}</p>
                 )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* === MODE VIEW === */}
+      {mode === "view" && (
+        <div className="w-full space-y-4">
+          {visibleFields.map(({ key, label }) => {
+            return (
+              <div key={key} className="flex flex-col">
+                <label className="block text-base font-medium text-gray-700 mb-1">
+                  {label}
+                </label>
+                <div className="relative border-2 border-dashed border-gray-300 rounded-lg">
+                  {previews[key] ? (
+                    <img
+                      src={previews[key]!}
+                      alt={label}
+                      className="w-full max-h-[300px] object-contain bg-gray-50 rounded-lg cursor-pointer hover:opacity-90"
+                      onClick={() => window.open(previews[key]!, "_blank")}
+                    />
+                  ) : (
+                    <div className="w-full min-h-44 flex items-center justify-center bg-gray-50 text-gray-400 italic text-sm">
+                      Tidak ada file
+                    </div>
+                  )}
+
+                  {/* Tombol 'Buka' */}
+                  {previews[key] && (
+                    <Button
+                      variant="secondary"
+                      type="button"
+                      className="absolute bottom-2 right-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 shadow-sm text-sm px-2 py-1 flex items-center space-x-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(previews[key]!, "_blank");
+                      }}
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Buka</span>
+                    </Button>
+                  )}
+                </div>
               </div>
             );
           })}
